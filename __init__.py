@@ -284,7 +284,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             bpy.ops.object.duplicate(linked=False)
             
             fk_esqueleto = bpy.context.active_object
-            #fk_esqueleto.location.x += 5
+            fk_esqueleto.location.x += 5
             fk_esqueleto.name = "FK"
             
             bpy.ops.object.mode_set(mode='EDIT')
@@ -293,11 +293,12 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             huesos_a_borrar = []
             for bone in fk_esqueleto.data.edit_bones:
                 if not bone.name.startswith("DF."):
-                    huesos_a_borrar.append(bone)
+                    #huesos_a_borrar.append(bone)
+                    fk_esqueleto.data.edit_bones.remove(bone)
                     
             # 2. Eliminar los huesos encontrados
-            for bone in huesos_a_borrar:
-                fk_esqueleto.data.edit_bones.remove(bone)
+            #for bone in huesos_a_borrar:
+            #    fk_esqueleto.data.edit_bones.remove(bone)
             
 
             # 3. Ajustar los huesos restantes (los DF.)
@@ -455,6 +456,12 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         return {'FINISHED'}  
 
 
+##############################################################
+#                LIMPIEZA Y CORRECCIONES 
+#################################################################
+
+
+
 # selecionar FK
 class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
@@ -506,7 +513,61 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        
+        obj = context.object
+        
+        bpy.ops.armature.select_all(action='DESELECT')
+        armature_data = obj.data
+        
+        for edit_bone in armature_data.edit_bones:
+        
+            # 3. Comprobar si el nombre inicia con el prefijo
+            if edit_bone.name.startswith("FK."):
+                armature_data.edit_bones.remove(edit_bone)
+                
+                
+        bpy.ops.object.mode_set(mode='POSE') 
+        NOMBRE_CONSTRAINT = "FK_ROTATION"
+        
+        DF_esqueleto = context.object
+        
+        for bone in DF_esqueleto.pose.bones:      
+            if bone.name.startswith("DF."):
+                if NOMBRE_CONSTRAINT in bone.constraints:
+                    
+                    constraint_a_borrar = bone.constraints[NOMBRE_CONSTRAINT]
+                    bone.constraints.remove(constraint_a_borrar)
+                    
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        
+        #limpiar drivers rotos
+        drivers_eliminados = 0
+        drivers_lista = DF_esqueleto.animation_data.drivers
+        for fcurve in list(drivers_lista):
+            driver = fcurve.driver
+            esta_roto = False
+
+            # 1. Comprobar si alguna variable del driver perdió su objetivo (Target es None)
+            for var in driver.variables:
+                for target in var.targets:
+                    # Si la variable requiere un ID object y está vacío, o la ruta RNA está rota
+                    if target.id is not None and target.data_path == "":
+                        esta_roto = True
+                        break
+                    
+                    # Caso común: La variable apunta a un objeto/propiedad borrada
+                    if target.id is None and var.type not in {'SINGLE_PROP'}:
+                        esta_roto = True
+                        break
+        
+                # 2. Si se detectó una dependencia rota, eliminar el driver
+                if esta_roto:
+                    drivers_lista.remove(fcurve)
+                    drivers_eliminados += 1    
+        bpy.context.evaluated_depsgraph_get().update()
+        self.report({"INFO"},f"Se eliminaron {drivers_eliminados} drivers")    
+        
         return {'FINISHED'}  
     
      
@@ -566,7 +627,7 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
     @classmethod
     def poll(cls,context):
         obj = context.object
-        return obj and obj.type == 'ARMATURE' and context.mode != "OBJECT" 
+        return obj and obj.type == 'ARMATURE' and context.mode != "OBJECT" and context.mode != "POSE" 
     
     def draw(self, context):
         layout = self.layout
@@ -581,6 +642,7 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
         
         Eliminar_sistema = layout.box()
         Eliminar_sistema.label(text = "Eliminar sistema")
+        Eliminar_sistema.operator("object.eliminar_fk")
 
     
 # menu en propiedades sistema FK
