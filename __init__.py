@@ -284,7 +284,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             bpy.ops.object.duplicate(linked=False)
             
             fk_esqueleto = bpy.context.active_object
-            fk_esqueleto.location.x += 5.0
+            #fk_esqueleto.location.x += 5
             fk_esqueleto.name = "FK"
             
             bpy.ops.object.mode_set(mode='EDIT')
@@ -304,7 +304,11 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             for bone in fk_esqueleto.data.edit_bones:
                 bone.use_deform = False
                 bone.name = "FK." + bone.name[3:]
-        
+                
+                bone.color.palette = "CUSTOM"
+                bone.color.custom.normal = (0.0,1.0,0.0)
+                bone.color.custom.select = (1.0, 0.0, 0.0)
+                bone.color.custom.active = (1.0,1.0, 1.0)
                 
             bpy.ops.object.mode_set(mode='OBJECT')    
             
@@ -449,13 +453,69 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
     def execute(self, context): 
         self.report({'INFO'}, "HOLA MUNDO") 
         return {'FINISHED'}  
+
+
+# selecionar FK
+class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
     
+    bl_idname = "object.selecionar_fk" 
+    bl_label = "Seleciona sistema FK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'} 
+    
+    
+# selecionar IK
+class OBJECT_OT_SELECIONAR_IK(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.selecionar_ik" 
+    bl_label = "Seleciona sistema IK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'}  
+    
+# selecionar ipi
+class OBJECT_OT_SELECIONAR_IPI(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.selecionar_ipi" 
+    bl_label = "Seleciona sistema IPI" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'}  
+    
+
+# elimina sistema FK
+class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.eliminar_fk"
+    bl_label = "ELIMINA EL SISTEMA FK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'}  
+    
+     
 ###########################################################
 #
 #     Vistas UI
 #
 ###########################################################
-    
+   
     
 # MENU de generalidades    
 class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
@@ -494,10 +554,39 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         pass
     pass
 
+# permite selecionar los diferente esqueletos
+class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
+    
+    bl_label = "Selecionar sistema"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+
+    
+    @classmethod
+    def poll(cls,context):
+        obj = context.object
+        return obj and obj.type == 'ARMATURE' and context.mode != "OBJECT" 
+    
+    def draw(self, context):
+        layout = self.layout
+        armature = context.object.data
+        
+        Selecionar = layout.box()
+        Selecionar.label(text="Selecionar sistma")
+        Selecionar.operator("object.selecionar_fk")
+        Selecionar.operator("object.selecionar_ik")
+        Selecionar.operator("object.selecionar_ipi")
+        Selecionar.separator()
+        
+        Eliminar_sistema = layout.box()
+        Eliminar_sistema.label(text = "Eliminar sistema")
+
+    
 # menu en propiedades sistema FK
 class DATA_PT_UI_Control_FK(bpy.types.Panel):
     
-    bl_label = "Sistema de control Fk "
+    bl_label = "Sistema de control Fk"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"  # Apunta a la pestaña Data
@@ -628,9 +717,18 @@ class DATA_PT_UI_Control_FK(bpy.types.Panel):
 classes = [
     DATA_PT_UI_CREATE_ARMATURE,
     DATA_PT_UI_Control_FK,
+    DATA_PT_UI_SELECIONAR_SISTEMA,
+    
+    
     OBJECT_OT_Generar_sistema_FK,
     OBJECT_OT_Generar_sistema_IK,
     OBJECT_OT_Generar_sistema_IPI,
+    
+    OBJECT_OT_SELECIONAR_FK,
+    OBJECT_OT_SELECIONAR_IPI,
+    OBJECT_OT_SELECIONAR_IK,
+    
+    OBJECT_OT_ELIMINAR_FK,
     
     ARMATURE_GENERAL_PROPIEDADES,
     ARMATURE_SISTEMA_FK_PROPIEDADES,
