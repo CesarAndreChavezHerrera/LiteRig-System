@@ -1,0 +1,662 @@
+###########################################################
+#
+#                          INICIO
+#
+###########################################################
+
+bl_info = {
+    "name": "INDI RIGGING SYSTEM",
+    "author": "cesar andre chavez herrera",
+    "version": (1, 0, 0),
+    "blender": (5, 0, 0),
+    "location": "Properties > Data (Armature)",
+    "description": "Creacion de un rigging simple para animaciones low poly con soporte para captura de movimiento con ipi mocap.",
+    "category": "Rigging",
+}
+
+
+import bpy
+
+
+
+
+
+
+###########################################################
+#
+#     PROPIEDADES A EXPONER
+#
+###########################################################
+
+# Entradas de creacion de sistema 
+
+def crear_propiedad_sliders(Nombre, descripcion="",update =None):
+    return bpy.props.FloatProperty(
+        name=Nombre,
+        description=descripcion,
+        default=1.0, min=0.0, max=1.0, step=0.01,
+        subtype='PERCENTAGE',
+        update=update
+    )
+    pass
+
+def crear_propiedad_switch(Nombre, descripcion = "",default = True,update = None):
+    return bpy.props.BoolProperty(
+        name=Nombre,
+        description=descripcion,
+        default=default,
+        update=update
+    )
+    pass
+######################################################
+#           Funciones asociada al cambio de propiedades 
+####################################################
+
+
+def Actualizar_mostrar_fk(self,context):
+    estado = self.mostrar
+    self.mostrar_cabeza  = estado
+    self.mostrar_cejas   = estado
+    self.mostrar_ojos    = estado
+    self.mostrar_boca    = estado
+    self.mostrar_espalda = estado
+    
+    self.mostrar_brazo_l = estado
+    self.mostrar_mano_l  = estado
+    self.mostrar_brazo_r = estado
+    self.mostrar_mano_r  = estado
+    
+    self.mostrar_pierna_l= estado
+    self.mostrar_pie_l   = estado
+    self.mostrar_pierna_r= estado
+    self.mostrar_pie_r   = estado 
+    pass
+
+def Actualizar_influencia_fk(self,context):
+    
+    influencia = self.influencia_maestra
+    
+    self.influencia_cabeza   = influencia
+    self.influencia_cejas    = influencia
+    self.influencia_ojos     = influencia
+    self.influencia_boca     = influencia
+    self.influencia_espalda  = influencia
+    
+    self.influencia_brazo_l  = influencia
+    self.influencia_mano_l   = influencia
+    self.influencia_pierna_l = influencia
+    self.influencia_pie_l    = influencia
+    
+    self.influencia_brazo_r  = influencia
+    self.influencia_mano_r   = influencia
+    self.influencia_pierna_r = influencia
+    self.influencia_pie_r    = influencia
+    pass
+
+
+
+######################################################
+#           De claracion de propiedades 
+####################################################
+
+# propiedades generales
+class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
+    
+    # propiedad ACTIVAR COMBINAR el esqueleto FK con el esqueleto base
+    combinar_FK: crear_propiedad_switch(
+        "Combinar IK",
+        "Habilita que despues de crear el sistema IK lo combine con el esqueleto base"
+        )
+    
+    # propiedad ACTIVAR COMBINAR el esqueleto IK con el esqueleto base
+    combinar_IK : crear_propiedad_switch(
+        "Combinar IK",
+        "Habilita que despues de crear el sistema IK lo combine con el esqueleto base"
+        )
+    
+    # propiedad ACTIVAR COMBINAR el esqueleto IPI con el esqueleto base
+    combinar_IPI : crear_propiedad_switch(
+        "Combinar IPI",
+        "Habilita que despues de crear el sistema Mocap ipi software lo combine con el esqueleto base"
+        )
+    pass
+
+
+# propiedades FK
+class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
+    
+    # muestra todas el esqueleto del sistema FK
+    mostrar             : crear_propiedad_switch("Mostrar FK",
+                            update= Actualizar_mostrar_fk)
+    influencia_maestra  : crear_propiedad_sliders("Influencia FK",
+                            update= Actualizar_influencia_fk )
+    
+    # cabeza 
+    mostrar_cabeza       : crear_propiedad_switch("Mostrar cabeza FK")
+    influencia_cabeza    : crear_propiedad_sliders("Influencia cabeza FK")
+    
+    mostrar_cejas        : crear_propiedad_switch("Mostrar cejas FK")
+    influencia_cejas     : crear_propiedad_sliders("Influencia cejas FK")
+    
+    mostrar_ojos        : crear_propiedad_switch("Mostrar ojos FK")
+    influencia_ojos     : crear_propiedad_sliders("Influencia ojos FK")
+    
+    mostrar_boca        : crear_propiedad_switch("Mostrar boca FK")
+    influencia_boca     : crear_propiedad_sliders("Influencia boca FK")
+    
+    #espalda
+    mostrar_espalda      : crear_propiedad_switch("Mostrar Espalda FK")
+    influencia_espalda   : crear_propiedad_sliders( "Influencia Espalda FK")
+    
+    #brazo L
+    mostrar_brazo_l     : crear_propiedad_switch("Mostrar Brazo L FK")
+    influencia_brazo_l   : crear_propiedad_sliders( "Influencia Brazo L FK")
+    
+    #Mano L
+    mostrar_mano_l       : crear_propiedad_switch("Mostrar Mano L FK")
+    influencia_mano_l    : crear_propiedad_sliders( "Influencia Mano L FK")
+    
+    #brazo R
+    mostrar_brazo_r      : crear_propiedad_switch("Mostrar Brazo R FK")
+    influencia_brazo_r   : crear_propiedad_sliders( "Influencia Brazo R FK")
+    
+    #Mano R
+    mostrar_mano_r       : crear_propiedad_switch("Mostrar Mano R FK")
+    influencia_mano_r    : crear_propiedad_sliders( "Influencia Mano R FK")
+    
+    #Pierna L
+    mostrar_pierna_l      : crear_propiedad_switch("Mostrar pierna L FK")
+    influencia_pierna_l   : crear_propiedad_sliders( "Influencia Brazo R FK")
+    
+    #Pierna L
+    mostrar_pie_l      : crear_propiedad_switch("Mostrar Pie L FK")
+    influencia_pie_l   : crear_propiedad_sliders( "Influencia Pie R FK")
+    
+    #Pierna r
+    mostrar_pierna_r      : crear_propiedad_switch("Mostrar pierna L FK")
+    influencia_pierna_r   : crear_propiedad_sliders( "Influencia Brazo R FK")
+    
+    #Pierna r
+    mostrar_pie_r      : crear_propiedad_switch("Mostrar Pie L FK")
+    influencia_pie_r   : crear_propiedad_sliders( "Influencia Pie R FK")
+    pass
+    
+
+
+######################################################
+#          Enlazamiento de propiedades con objeto 
+####################################################
+
+
+# clase en cargada de guardar todas las propiedades dentro de bpy.types.Armature.control_rig 
+class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
+    
+    crear_prop  : bpy.props.PointerProperty(type = ARMATURE_GENERAL_PROPIEDADES)
+    fk_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_FK_PROPIEDADES)
+    
+    
+    pass
+
+######################################################
+#           ACTUALIZACION en animacion
+####################################################
+
+
+###########################################################################################
+#            Registro de propiedades 
+##########################################################################################
+
+# vinculas las propiedades 
+def registrar_propiedades():
+    
+    bpy.types.Armature.control_rig = bpy.props.PointerProperty(type = ARMATURE_CONTROLADOR_PROPIEDADES )
+    pass
+
+# desvincular la propiedades
+def unregister_properties():
+    
+    if hasattr(bpy.types.Armature, "control_rig"):
+        del bpy.types.Armature.control_rig
+    pass
+        
+###########################################################
+#
+#     BOTONES
+#
+###########################################################
+
+def crear_var_driver(driver,
+                    nombre,
+                    data_path,
+                    id_target,
+                    id_type = "ARMATURE"):
+    
+    var = driver.variables.new()
+    var.name = nombre
+    var.type = 'SINGLE_PROP'
+    var.targets[0].id_type = id_type
+    var.targets[0].id = id_target
+    var.targets[0].data_path = data_path+nombre
+    return var
+
+# reutilizar variable
+def vincular_driver(
+                prop_nombre, # nombre de la variable expuerta
+                bone,        # hueso a conectar la propiedad
+                data_path,   # ruta_variable expuerta
+                armature,    # objeto que tiene la variable 
+                prop_maestra = "mostrar", #nombre de la variable expuerta
+                contectar_prop = "hide",  #nombre de la propiedad a conectar
+                ajuste_expresion = "not"    
+                    ):
+    
+    driver = bone.driver_add(contectar_prop).driver
+    driver.type = "SCRIPTED"
+    
+    crear_var_driver(driver,prop_maestra,data_path,armature) # crea la variable maestra
+    crear_var_driver(driver,prop_nombre,data_path,armature)    # crea la variable especifica
+    
+    driver.expression = ajuste_expresion+f"({prop_maestra}*{prop_nombre})"                 
+    pass
+
+# sistema Fk
+class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.generar_fk" 
+    bl_label = "Generar FK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        armature  = context.object.data
+        fk        = armature.control_rig  
+        modo      = context.mode
+        combinar  = fk.crear_prop.combinar_FK
+        
+        if modo == "OBJECT":
+            
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+            deformador_esqueleto = bpy.context.active_object
+            
+            bpy.ops.object.duplicate(linked=False)
+            
+            fk_esqueleto = bpy.context.active_object
+            fk_esqueleto.location.x += 5.0
+            fk_esqueleto.name = "FK"
+            
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            #borra los huesos 
+            huesos_a_borrar = []
+            for bone in fk_esqueleto.data.edit_bones:
+                if not bone.name.startswith("DF."):
+                    huesos_a_borrar.append(bone)
+                    
+            # 2. Eliminar los huesos encontrados
+            for bone in huesos_a_borrar:
+                fk_esqueleto.data.edit_bones.remove(bone)
+            
+
+            # 3. Ajustar los huesos restantes (los DF.)
+            for bone in fk_esqueleto.data.edit_bones:
+                bone.use_deform = False
+                bone.name = "FK." + bone.name[3:]
+        
+                
+            bpy.ops.object.mode_set(mode='OBJECT')    
+            
+            
+            # si el esqueleto FK NO esta vacio 
+            vacio = len(fk_esqueleto.data.bones) == 0             
+            if not len(fk_esqueleto.data.bones) == 0:
+                
+                bpy.ops.object.mode_set(mode='POSE')
+                
+                ############################################
+                # encargado de conectar la propiedad mostrar con su propiedad hide
+                ###########################################
+                data_path = "control_rig.fk_prop."
+                MAPEO_NOMBRE_BONE_PROPIEDADES_MOSTRAR = {
+                    "FK.CABEZA."   : "mostrar_cabeza",
+                    "FK.ESPALDA."  : "mostrar_espalda",
+                    
+                    "FK.BRAZO_R."  : "mostrar_brazo_r",
+                    "FK.MANO_R."   : "mostrar_mano_r",
+                    "FK.PIERNA_R." : "mostrar_pierna_r",
+                    "FK.PIE_R."    : "mostrar_pie_r",
+                    
+                    "FK.BRAZO_L."  : "mostrar_brazo_l",
+                    "FK.MANO_L."   : "mostrar_mano_l",
+                    "FK.PIERNA_L." : "mostrar_pierna_l",
+                    "FK.PIE_L."    : "mostrar_pie_l",
+                }
+                for bone in fk_esqueleto.pose.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_MOSTRAR.items():
+                        
+                        if bone.name.startswith(prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+                
+                ############################################
+                # encargado de conectar la propiedad mostrar con su propiedad hide
+                ###########################################
+                data_path = "control_rig.fk_prop."
+                MAPEO_NOMBRE_BONE_PROPIEDADES_INFLUENCIA = {
+                    "DF.CABEZA."   : "influencia_cabeza",
+                    "DF.ESPALDA."  : "influencia_espalda",
+                    
+                    "DF.BRAZO_R."  : "influencia_brazo_r",
+                    "DF.MANO_R."   : "influencia_mano_r",
+                    "DF.PIERNA_R." : "influencia_pierna_r",
+                    "DF.PIE_R."    : "influencia_pie_r",
+                    
+                    "DF.BRAZO_L."  : "influencia_brazo_l",
+                    "DF.MANO_L."   : "influencia_mano_l",
+                    "DF.PIERNA_L." : "influencia_pierna_l",
+                    "DF.PIE_L."    : "influencia_pie_l",
+                }
+                # entra al esqueleto original 
+                bpy.ops.object.mode_set(mode='OBJECT')
+                bpy.ops.object.select_all(action='DESELECT')
+                bpy.context.view_layer.objects.active = deformador_esqueleto            
+                bpy.ops.object.mode_set(mode='POSE')
+                
+                for bone in deformador_esqueleto.pose.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_INFLUENCIA.items():
+                        if bone.name.startswith(prefijo):
+                            
+                            constraint_hueso = bone.constraints.new(type='COPY_ROTATION')
+                            constraint_hueso.name = "FK_ROTATION"
+                            constraint_hueso.target = fk_esqueleto
+                            constraint_hueso.subtarget = "FK."+bone.name[3:]
+                            
+                            vincular_driver(propiedad,
+                                            constraint_hueso,
+                                            data_path,armature,
+                                            "influencia_maestra",
+                                            "influence","")
+                            
+                            
+                    pass
+                    
+                    
+                context.object.update_tag(refresh={'DATA'})
+            
+            else:
+                #deformar
+                bpy.ops.object.delete(use_global=False)
+                bpy.ops.object.select_all(action='DESELECT')
+                bpy.context.view_layer.objects.active = deformador_esqueleto
+                deformador_esqueleto.select_set(True)
+                
+
+            if combinar:
+                # cambia a modo objeto 
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+                #seleciona ambos objeto
+                fk_esqueleto_join         = bpy.data.objects.get(fk_esqueleto.name)
+                deformador_esqueleto_join = bpy.data.objects.get(deformador_esqueleto.name)
+                fk_esqueleto_join.select_set(True)
+                deformador_esqueleto_join.select_set(True)
+                
+                # combierte el esqueleto deformador primero
+                bpy.context.view_layer.objects.active = deformador_esqueleto_join
+                bpy.ops.object.join()
+                
+                pass
+            else:
+                bpy.ops.object.mode_set(mode='OBJECT')
+                #Selecionar el esqueleto original 
+                bpy.ops.object.select_all(action='DESELECT')
+                bpy.context.view_layer.objects.active = deformador_esqueleto
+                deformador_esqueleto.select_set(True)
+            pass 
+        
+        
+        return {'FINISHED'}
+
+
+
+
+
+
+# sistema IK
+class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.generar_ik" 
+    bl_label = "Generar IK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'}
+    
+    
+# sistema IPI    
+class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator): 
+    """Crea al esqueleto selecionado su sistema de control FK"""
+    
+    bl_idname = "object.generar_ipi" 
+    bl_label = "Generar IPI" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        self.report({'INFO'}, "HOLA MUNDO") 
+        return {'FINISHED'}  
+    
+###########################################################
+#
+#     Vistas UI
+#
+###########################################################
+    
+    
+# MENU de generalidades    
+class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
+    
+    bl_label = "Creacion de Controles de Armature "
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+    
+    @classmethod
+    def poll(cls,context):
+        obj = context.object
+        return obj and obj.type == 'ARMATURE' and context.mode == 'OBJECT'
+
+    def draw(self, context):
+        layout = self.layout
+        armature = context.object.data
+        general_prop = armature.control_rig.crear_prop
+        
+        box_crear = layout.box()
+        box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
+        
+        
+        fila_1 = box_crear.row(align=True)
+        fila_1.prop(general_prop, "combinar_FK", toggle=True)
+        fila_1.operator("object.generar_fk",icon="BONE_DATA")
+        
+        fila_2 = box_crear.row(align=True)
+        fila_2.prop(general_prop, "combinar_IK", toggle=True)
+        fila_2.operator("object.generar_ik",icon="BONE_DATA")
+        
+        
+        fila_3 = box_crear.row(align=True)
+        fila_3.prop(general_prop, "combinar_IPI", toggle=True)
+        fila_3.operator("object.generar_ipi",icon="BONE_DATA")
+        pass
+    pass
+
+# menu en propiedades sistema FK
+class DATA_PT_UI_Control_FK(bpy.types.Panel):
+    
+    bl_label = "Sistema de control Fk "
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+    
+    @classmethod
+    def poll(cls,context):
+        return context.object is not None and context.object.type == "ARMATURE" and context.mode == 'POSE'
+    pass
+    
+    def draw(self, context):
+        layout = self.layout
+        armature = context.active_object.data.control_rig.fk_prop
+        
+        # control general
+        box_general = layout.box()
+        box_general.label(text="Sistema de control FK")
+        box_general.prop(armature,"mostrar",toggle=True)
+        box_general.prop(armature,"influencia_maestra",slider=True)
+        layout.separator()
+        
+        #control Cabeza
+        cabeza = layout.box()
+        cabeza.label(text="cabeza")
+        cabeza_botones = cabeza.row()
+        cabeza_botones.prop(armature,"mostrar_cabeza",toggle=True)
+        cabeza_botones.prop(armature,"influencia_cabeza",slider=True)
+        
+        cejas = cabeza.box()
+        cejas.label(text ="CEJAS")
+        cejas_botones = cejas.row()
+        cejas_botones.prop(armature,"mostrar_cejas", toggle=True)
+        cejas_botones.prop(armature,"influencia_cejas", toggle=True)
+        
+        ojos = cabeza.box()
+        ojos.label(text ="OJOS")
+        ojos_botones = ojos.row()
+        ojos_botones.prop(armature,"mostrar_ojos", toggle=True)
+        ojos_botones.prop(armature,"influencia_ojos", toggle=True)
+        
+        boca = cabeza.box()
+        boca.label(text ="BOCA")
+        boca_botones = boca.row()
+        boca_botones.prop(armature,"mostrar_boca", toggle=True)
+        boca_botones.prop(armature,"influencia_boca", toggle=True)
+
+        
+        layout.separator()
+        
+        
+        
+        # espalda
+        espalda = layout.box()
+        espalda.label(text="ESPALDA")
+        espalda_botones = espalda.row()
+        espalda_botones.prop(armature,"mostrar_espalda",toggle=True)
+        espalda_botones.prop(armature,"influencia_espalda",slider=True)
+        layout.separator()
+        
+        
+        # brazo L
+        brazo_L = layout.box()
+        brazo_L.label(text="BRAZO L")
+        brazo_botones_L = brazo_L.row()
+        brazo_botones_L.prop(armature,"mostrar_brazo_l",toggle=True)
+        brazo_botones_L.prop(armature,"influencia_brazo_l",slider=True)
+        #mano
+        mano_L = brazo_L.box()
+        mano_L.label(text="MANO L")
+        mano_botones_L = mano_L.row()
+        mano_botones_L.prop(armature,"mostrar_mano_l",toggle=True)
+        mano_botones_L.prop(armature,"influencia_mano_l",slider=True)
+        layout.separator()
+        
+        
+        # brazo R
+        brazo_R = layout.box()
+        brazo_R.label(text="BRAZO R")
+        brazo_botones_R = brazo_R.row()
+        brazo_botones_R.prop(armature,"mostrar_brazo_r",toggle=True)
+        brazo_botones_R.prop(armature,"influencia_brazo_r",slider=True)
+        #mano
+        mano_R = brazo_R.box()
+        mano_R.label(text="MANO R")
+        mano_botones_R = mano_R.row()
+        mano_botones_R.prop(armature,"mostrar_mano_r",toggle=True)
+        mano_botones_R.prop(armature,"influencia_mano_r",slider=True)
+        layout.separator()
+        
+        
+        # pierna L
+        pierna_L = layout.box()
+        pierna_L.label(text="PIERNA L")
+        pierna_botones_L = pierna_L.row()
+        pierna_botones_L.prop(armature,"mostrar_pierna_l",toggle=True)
+        pierna_botones_L.prop(armature,"influencia_pierna_l",slider=True)
+        #pie L
+        pie_L = pierna_L.box()
+        pie_L.label(text="PIE L")
+        pie_botones_L = pie_L.row()
+        pie_botones_L.prop(armature,"mostrar_pie_l",toggle=True)
+        pie_botones_L.prop(armature,"influencia_pie_l",slider=True)
+        layout.separator()
+        
+        # pierna R
+        pierna_R = layout.box()
+        pierna_R.label(text="PIERNA R")
+        pierna_botones_R = pierna_R.row()
+        pierna_botones_R.prop(armature,"mostrar_pierna_r",toggle=True)
+        pierna_botones_R.prop(armature,"influencia_pierna_r",slider=True)
+        #pie R
+        pie_R = pierna_R.box()
+        pie_R.label(text="PIE R")
+        pie_botones_R = pie_R.row()
+        pie_botones_R.prop(armature,"mostrar_pie_r",toggle=True)
+        pie_botones_R.prop(armature,"influencia_pie_r",slider=True)
+        layout.separator()
+        
+        
+        
+
+###########################################################
+#
+#     LIMPIEZA
+#
+###########################################################
+
+# listado de clases 
+classes = [
+    DATA_PT_UI_CREATE_ARMATURE,
+    DATA_PT_UI_Control_FK,
+    OBJECT_OT_Generar_sistema_FK,
+    OBJECT_OT_Generar_sistema_IK,
+    OBJECT_OT_Generar_sistema_IPI,
+    
+    ARMATURE_GENERAL_PROPIEDADES,
+    ARMATURE_SISTEMA_FK_PROPIEDADES,
+    ARMATURE_CONTROLADOR_PROPIEDADES,
+]
+
+
+
+
+
+
+
+
+def register():
+    
+    
+    for cls in classes: 
+        bpy.utils.register_class(cls)
+        
+    registrar_propiedades()
+    
+    
+def unregister(): 
+    for cls in reversed(classes): 
+        bpy.utils.unregister_class(cls)
+        
+    unregister_properties()
+        
+if __name__ == "__main__": register()
