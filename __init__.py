@@ -737,7 +737,7 @@ class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator):
         
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
-        esqueleto = obj.data
+        esqueleto = obj
         
         borrar_huesos_prefijo(esqueleto,"IK.")
       
@@ -772,7 +772,7 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
         
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
-        esqueleto = obj.data
+        esqueleto = obj
         borrar_huesos_prefijo(esqueleto,"IPI.")
       
         #borrado de constraints         
