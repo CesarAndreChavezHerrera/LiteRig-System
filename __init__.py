@@ -1,9 +1,10 @@
 ###########################################################
 #
-#                          INICIO
+#                   INICIO
 #
 ###########################################################
 
+# Información del Add-on registrada en Blender (metadatos principales)
 bl_info = {
     "name": "INDI RIGGING SYSTEM",
     "author": "cesar andre chavez herrera",
@@ -30,6 +31,7 @@ import bpy
 
 # Entradas de creacion de sistema 
 
+# Función aux. para instanciar propiedades numéricas tipo slider (porcentaje de 0.0 a 1.0)
 def crear_propiedad_sliders(Nombre, descripcion="",update =None):
     return bpy.props.FloatProperty(
         name=Nombre,
@@ -40,6 +42,7 @@ def crear_propiedad_sliders(Nombre, descripcion="",update =None):
     )
     pass
 
+# Función aux. para instanciar propiedades booleanas (interruptores On/Off)
 def crear_propiedad_switch(Nombre, descripcion = "",default = True,update = None):
     return bpy.props.BoolProperty(
         name=Nombre,
@@ -52,7 +55,7 @@ def crear_propiedad_switch(Nombre, descripcion = "",default = True,update = None
 #           Funciones asociada al cambio de propiedades 
 ####################################################
 
-
+# Callback que sincroniza la visibilidad de todas las partes al cambiar el interruptor principal FK
 def Actualizar_mostrar_fk(self,context):
     estado = self.mostrar
     self.mostrar_cabeza  = estado
@@ -72,6 +75,7 @@ def Actualizar_mostrar_fk(self,context):
     self.mostrar_pie_r   = estado 
     pass
 
+# Callback que propaga el nivel de influencia maestro a todos los sub-grupos de huesos FK
 def Actualizar_influencia_fk(self,context):
     
     influencia = self.influencia_maestra
@@ -99,7 +103,7 @@ def Actualizar_influencia_fk(self,context):
 #           De claracion de propiedades 
 ####################################################
 
-# propiedades generales
+# propiedades generales: Opciones globales para combinar sistemas generados con la armadura base
 class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
     
     # propiedad ACTIVAR COMBINAR el esqueleto FK con el esqueleto base
@@ -122,7 +126,7 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
     pass
 
 
-# propiedades FK
+# propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
     
     # muestra todas el esqueleto del sistema FK
@@ -206,13 +210,13 @@ class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
 #            Registro de propiedades 
 ##########################################################################################
 
-# vinculas las propiedades 
+# vinculas las propiedades: Inyecta la estructura de datos dentro de las armaduras en Blender
 def registrar_propiedades():
     
     bpy.types.Armature.control_rig = bpy.props.PointerProperty(type = ARMATURE_CONTROLADOR_PROPIEDADES )
     pass
 
-# desvincular la propiedades
+# desvincular la propiedades: Remueve la propiedad control_rig al desactivar el complemento
 def unregister_properties():
     
     if hasattr(bpy.types.Armature, "control_rig"):
@@ -225,6 +229,7 @@ def unregister_properties():
 #
 ###########################################################
 
+# Crea y configura una variable dentro del driver especificado
 def crear_var_driver(driver,
                     nombre,
                     data_path,
@@ -239,7 +244,7 @@ def crear_var_driver(driver,
     var.targets[0].data_path = data_path+nombre
     return var
 
-# reutilizar variable
+# reutilizar variable: Conecta la propiedad de la UI con la propiedad de un hueso/constraint usando drivers
 def vincular_driver(
                 prop_nombre, # nombre de la variable expuerta
                 bone,        # hueso a conectar la propiedad
@@ -259,7 +264,110 @@ def vincular_driver(
     driver.expression = ajuste_expresion+f"({prop_maestra}*{prop_nombre})"                 
     pass
 
-# sistema Fk
+
+
+# eliminacion de constraints
+def eliminar_constraint(
+                        nombre_constraint, # nombre del contraints a borrar
+                        esqueleto,         # esqueleto a borrar las cosas 
+                        prefijo = "DF."    # prefijo del esqueleto a borrar 
+                        ):
+        
+    # Remueve la restricción de rotación FK de los huesos deformadores
+    for bone in esqueleto.pose.bones:   
+           
+        if bone.name.startswith(prefijo):
+            
+            if nombre_constraint in bone.constraints:
+                
+                constraint_a_borrar = bone.constraints[nombre_constraint]
+                bone.constraints.remove(constraint_a_borrar)
+    
+    pass
+
+
+# elimna todos los contraints
+def eliminar_todo_constraints(
+                            esqueleto,
+                            prefijo="DF."
+                            ):
+    
+    for bone in esqueleto.pose.bones:      
+        if bone.name.startswith(prefijo):
+            bone.constraints.clear()
+                                  
+    pass
+
+
+# elimina todos los drivers suelto de un esqueleto
+def eliminar_drivers_rotos_esqueleto(
+                                    esqueleto
+                                    ):
+    #if not (esqueleto and esqueleto.animation_data and esqueleto.animation_data.drivers):
+    #    return
+    
+    # actualiza los drivers 
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    depsgraph.update()
+    
+    anim_data = esqueleto.animation_data    
+    
+    # evalua los drivers de los huesos   
+    for fcurve in list(anim_data.drivers):
+        
+        # driver invalido o error eliminado
+        if not fcurve.driver.is_valid:
+            
+            anim_data.drivers.remove(fcurve)
+        else:
+            
+            # eliminacion de drivers que fueron desvinculado al hueso matris
+            eliminar = False
+            driver = fcurve.driver
+            
+            # si su propiedad prop esta vacia entonces se guarda y se borra despues 
+            for variable in driver.variables:
+                for target in variable.targets:
+                    if target.id is None:
+                        eliminar = True            
+                pass
+            if eliminar:
+                anim_data.drivers.remove(fcurve)
+                   #self.report({"INFO"},f"driver eliminado del hueso {bone}")
+    
+    bpy.context.view_layer.update()
+    pass
+
+
+#borra hueso segun un prefijo
+def borrar_huesos_prefijo(
+                esqueleto,
+                prefijo
+                ):
+    for bone in esqueleto.edit_bones:
+        
+        if bone.name.startswith(prefijo):
+            esqueleto.edit_bones.remove(bone)
+            pass
+    
+    pass                                        
+                        
+def selecionar_huesos(
+                    Esqueleto,
+                    Prefijo = "DF."):
+                        
+    bpy.ops.armature.select_all(action='DESELECT')
+     
+    for bone in esqueleto.edit_bones:
+        if bone.ame.startswith(prefijo):
+            bone.select = True
+            bone.select_head = True
+            bone.select_tail = True
+                               
+    pass
+
+
+# sistema Fk: Operador encargado de duplicar la armadura base y estructurar los huesos FK
 class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -281,6 +389,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
 
             deformador_esqueleto = bpy.context.active_object
             
+            # Clona la armadura base para generar el esqueleto de control FK
             bpy.ops.object.duplicate(linked=False)
             
             fk_esqueleto = bpy.context.active_object
@@ -289,7 +398,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            #borra los huesos 
+            #borra los huesos que no tengan el prefijo DF.
             huesos_a_borrar = []
             for bone in fk_esqueleto.data.edit_bones:
                 if not bone.name.startswith("DF."):
@@ -301,7 +410,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
             #    fk_esqueleto.data.edit_bones.remove(bone)
             
 
-            # 3. Ajustar los huesos restantes (los DF.)
+            # 3. Ajustar los huesos restantes (los DF.): Renombra a FK. y asigna colores en el viewport
             for bone in fk_esqueleto.data.edit_bones:
                 bone.use_deform = False
                 bone.name = "FK." + bone.name[3:]
@@ -338,6 +447,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                     "FK.PIERNA_L." : "mostrar_pierna_l",
                     "FK.PIE_L."    : "mostrar_pie_l",
                 }
+                # Aplica drivers para ocultar/mostrar huesos FK según las propiedades
                 for bone in fk_esqueleto.pose.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_MOSTRAR.items():
                         
@@ -368,6 +478,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                 bpy.context.view_layer.objects.active = deformador_esqueleto            
                 bpy.ops.object.mode_set(mode='POSE')
                 
+                # Asigna restricciones Copy Rotation a la armadura base controladas por el esqueleto FK
                 for bone in deformador_esqueleto.pose.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_INFLUENCIA.items():
                         if bone.name.startswith(prefijo):
@@ -390,13 +501,14 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                 context.object.update_tag(refresh={'DATA'})
             
             else:
-                #deformar
+                # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
                 bpy.ops.object.delete(use_global=False)
                 bpy.ops.object.select_all(action='DESELECT')
                 bpy.context.view_layer.objects.active = deformador_esqueleto
                 deformador_esqueleto.select_set(True)
                 
 
+            # Fusiona las armaduras si la opción 'combinar' está activa
             if combinar:
                 # cambia a modo objeto 
                 bpy.ops.object.mode_set(mode='OBJECT')
@@ -428,7 +540,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
 
 
 
-# sistema IK
+# sistema IK: Operador reservado para la generación del sistema Cinemática Inversa
 class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -442,7 +554,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         return {'FINISHED'}
     
     
-# sistema IPI    
+# sistema IPI: Operador reservado para la generación del sistema retargeting de iPi Mocap
 class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -457,12 +569,12 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
 
 
 ##############################################################
-#                LIMPIEZA Y CORRECCIONES 
+#                 LIMPIEZA Y CORRECCIONES 
 #################################################################
 
 
 
-# selecionar FK
+# selecionar FK: Operador para seleccionar rápidamente el conjunto de controles FK
 class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -476,7 +588,7 @@ class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator):
         return {'FINISHED'} 
     
     
-# selecionar IK
+# selecionar IK: Operador para seleccionar el conjunto de controles IK
 class OBJECT_OT_SELECIONAR_IK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -489,7 +601,7 @@ class OBJECT_OT_SELECIONAR_IK(bpy.types.Operator):
         self.report({'INFO'}, "HOLA MUNDO") 
         return {'FINISHED'}  
     
-# selecionar ipi
+# selecionar ipi: Operador para seleccionar los elementos del sistema IPI Mocap
 class OBJECT_OT_SELECIONAR_IPI(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
@@ -502,10 +614,18 @@ class OBJECT_OT_SELECIONAR_IPI(bpy.types.Operator):
         self.report({'INFO'}, "HOLA MUNDO") 
         return {'FINISHED'}  
     
+    
+#################################################################################
+#                 Control de eliminacion de drivers 
+#################################################################################
 
-# elimina sistema FK
+
+
+#################################################################################
+#                            Borra sistema FK
+# elimina sistema FK: Elimina los huesos FK, retira constraints de los huesos base y limpia drivers huérfanos
 class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator): 
-    """Crea al esqueleto selecionado su sistema de control FK"""
+    """Borra la vinculacion con el sistema FK"""
     
     bl_idname = "object.eliminar_fk"
     bl_label = "ELIMINA EL SISTEMA FK" 
@@ -516,60 +636,99 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
         
         obj = context.object
         
+        # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
-        armature_data = obj.data
+        esqueleto = obj.data
         
-        for edit_bone in armature_data.edit_bones:
-        
-            # 3. Comprobar si el nombre inicia con el prefijo
-            if edit_bone.name.startswith("FK."):
-                armature_data.edit_bones.remove(edit_bone)
-                
-                
+        borrar_huesos_prefijo(esqueleto,"FK.")
+      
+        #borrado de constraints         
         bpy.ops.object.mode_set(mode='POSE') 
+        
         NOMBRE_CONSTRAINT = "FK_ROTATION"
+        esqueleto = context.object
+        eliminar_constraint(NOMBRE_CONSTRAINT,esqueleto,"DF.")
         
-        DF_esqueleto = context.object
-        
-        for bone in DF_esqueleto.pose.bones:      
-            if bone.name.startswith("DF."):
-                if NOMBRE_CONSTRAINT in bone.constraints:
-                    
-                    constraint_a_borrar = bone.constraints[NOMBRE_CONSTRAINT]
-                    bone.constraints.remove(constraint_a_borrar)
-                    
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        
-        #limpiar drivers rotos
-        drivers_eliminados = 0
-        drivers_lista = DF_esqueleto.animation_data.drivers
-        for fcurve in list(drivers_lista):
-            driver = fcurve.driver
-            esta_roto = False
-
-            # 1. Comprobar si alguna variable del driver perdió su objetivo (Target es None)
-            for var in driver.variables:
-                for target in var.targets:
-                    # Si la variable requiere un ID object y está vacío, o la ruta RNA está rota
-                    if target.id is not None and target.data_path == "":
-                        esta_roto = True
-                        break
-                    
-                    # Caso común: La variable apunta a un objeto/propiedad borrada
-                    if target.id is None and var.type not in {'SINGLE_PROP'}:
-                        esta_roto = True
-                        break
-        
-                # 2. Si se detectó una dependencia rota, eliminar el driver
-                if esta_roto:
-                    drivers_lista.remove(fcurve)
-                    drivers_eliminados += 1    
-        bpy.context.evaluated_depsgraph_get().update()
-        self.report({"INFO"},f"Se eliminaron {drivers_eliminados} drivers")    
+        #borra drivers sueltos
+        bpy.ops.object.mode_set(mode='POSE')
+        esqueleto = bpy.context.object
+        eliminar_drivers_rotos_esqueleto(esqueleto)
+        bpy.ops.object.mode_set(mode='EDIT')
         
         return {'FINISHED'}  
+
+
+
+
+####################################################
+#                   Eliminar IK
+class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator): 
+    """Borra la vinculacion con el sistema IK"""
     
+    bl_idname = "object.eliminar_ik"
+    bl_label = "ELIMINA EL SISTEMA IK" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        obj = context.object
+        
+        # eliminar huesos que no se necesita
+        bpy.ops.armature.select_all(action='DESELECT')
+        esqueleto = obj.data
+        
+        borrar_huesos_prefijo(esqueleto,"IK.")
+      
+        #borrado de constraints         
+        bpy.ops.object.mode_set(mode='POSE') 
+        
+        NOMBRE_CONSTRAINT = "IK_ROTATION"
+        esqueleto = context.object
+        eliminar_constraint(NOMBRE_CONSTRAINT,esqueleto,"DF.")
+        
+        #borra drivers sueltos
+        bpy.ops.object.mode_set(mode='POSE')
+        esqueleto = bpy.context.object
+        eliminar_drivers_rotos_esqueleto(esqueleto)
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        return {'FINISHED'}
+    
+#################################################################################
+#                            Borra sistema IPI
+class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator): 
+    """Borra la vinculacion con el sistema IPI"""
+    
+    bl_idname = "object.eliminar_ipi"
+    bl_label = "ELIMINA EL SISTEMA IPI" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        obj = context.object
+        
+        # eliminar huesos que no se necesita
+        bpy.ops.armature.select_all(action='DESELECT')
+        esqueleto = obj.data
+        borrar_huesos_prefijo(esqueleto,"IPI.")
+      
+        #borrado de constraints         
+        bpy.ops.object.mode_set(mode='POSE') 
+        
+        NOMBRE_CONSTRAINT = "IPI_ROTATION"
+        esqueleto = context.object
+        eliminar_constraint(NOMBRE_CONSTRAINT,esqueleto,"DF.")
+        
+        #borra drivers sueltos
+        bpy.ops.object.mode_set(mode='POSE')
+        esqueleto = bpy.context.object
+        eliminar_drivers_rotos_esqueleto(esqueleto)
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        return {'FINISHED'}  
+        
      
 ###########################################################
 #
@@ -578,7 +737,7 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
 ###########################################################
    
     
-# MENU de generalidades    
+# MENU de generalidades: Panel UI para la generación inicial de armaduras en Modo Objeto
 class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
     
     bl_label = "Creacion de Controles de Armature "
@@ -615,37 +774,9 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         pass
     pass
 
-# permite selecionar los diferente esqueletos
-class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
-    
-    bl_label = "Selecionar sistema"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "data"  # Apunta a la pestaña Data
 
     
-    @classmethod
-    def poll(cls,context):
-        obj = context.object
-        return obj and obj.type == 'ARMATURE' and context.mode != "OBJECT" and context.mode != "POSE" 
-    
-    def draw(self, context):
-        layout = self.layout
-        armature = context.object.data
-        
-        Selecionar = layout.box()
-        Selecionar.label(text="Selecionar sistma")
-        Selecionar.operator("object.selecionar_fk")
-        Selecionar.operator("object.selecionar_ik")
-        Selecionar.operator("object.selecionar_ipi")
-        Selecionar.separator()
-        
-        Eliminar_sistema = layout.box()
-        Eliminar_sistema.label(text = "Eliminar sistema")
-        Eliminar_sistema.operator("object.eliminar_fk")
-
-    
-# menu en propiedades sistema FK
+# menu en propiedades sistema FK: Panel para controlar visibilidad e influencia FK durante la animación en Pose Mode
 class DATA_PT_UI_Control_FK(bpy.types.Panel):
     
     bl_label = "Sistema de control Fk"
@@ -767,7 +898,37 @@ class DATA_PT_UI_Control_FK(bpy.types.Panel):
         layout.separator()
         
         
+ # permite selecionar los diferente esqueletos: Panel de herramientas de selección y borrado de subsistemas
+class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
+    
+    bl_label = "Selecionar sistema"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+
+    
+    @classmethod
+    def poll(cls,context):
+        obj = context.object
+        return obj and obj.type == 'ARMATURE' and context.mode != "OBJECT" and context.mode != "POSE" 
+    
+    def draw(self, context):
+        layout = self.layout
+        armature = context.object.data
         
+        Selecionar = layout.box()
+        Selecionar.label(text="Selecionar sistma")
+        Selecionar.operator("object.selecionar_fk")
+        Selecionar.operator("object.selecionar_ik")
+        Selecionar.operator("object.selecionar_ipi")
+        Selecionar.separator()
+        
+        Eliminar_sistema = layout.box()
+        Eliminar_sistema.label(text = "Eliminar sistema")
+        Eliminar_sistema.operator("object.eliminar_fk")
+        Eliminar_sistema.operator("object.eliminar_ik")
+        Eliminar_sistema.operator("object.eliminar_ipi")
+       
 
 ###########################################################
 #
@@ -775,7 +936,7 @@ class DATA_PT_UI_Control_FK(bpy.types.Panel):
 #
 ###########################################################
 
-# listado de clases 
+# listado de clases a registrar/desregistrar en Blender
 classes = [
     DATA_PT_UI_CREATE_ARMATURE,
     DATA_PT_UI_Control_FK,
@@ -791,6 +952,8 @@ classes = [
     OBJECT_OT_SELECIONAR_IK,
     
     OBJECT_OT_ELIMINAR_FK,
+    OBJECT_OT_ELIMINAR_IK,
+    OBJECT_OT_ELIMINAR_IPI,
     
     ARMATURE_GENERAL_PROPIEDADES,
     ARMATURE_SISTEMA_FK_PROPIEDADES,
@@ -803,7 +966,7 @@ classes = [
 
 
 
-
+# Punto de entrada para habilitar el complemento en Blender
 def register():
     
     
@@ -812,7 +975,7 @@ def register():
         
     registrar_propiedades()
     
-    
+# Punto de entrada para deshabilitar el complemento en Blender
 def unregister(): 
     for cls in reversed(classes): 
         bpy.utils.unregister_class(cls)
