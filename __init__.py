@@ -347,7 +347,7 @@ def borrar_huesos_prefijo(
     for bone in esqueleto.data.edit_bones:
         
         if bone.name.startswith(prefijo):
-            esqueleto.edit_bones.remove(bone)
+            esqueleto.data.edit_bones.remove(bone)
             pass
     
     pass                                        
@@ -699,7 +699,7 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
         
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
-        esqueleto = obj.data
+        esqueleto = obj
         
         borrar_huesos_prefijo(esqueleto,"FK.")
       
