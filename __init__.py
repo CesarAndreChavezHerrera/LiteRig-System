@@ -287,15 +287,24 @@ def eliminar_constraint(
 
 
 # elimna todos los contraints
-def eliminar_todo_constraints(
+def eliminar_todo_constraints( self,
                             esqueleto,
                             prefijo="DF."
                             ):
     
-    for bone in esqueleto.pose.bones:      
-        if bone.name.startswith(prefijo):
-            bone.constraints.clear()
-                                  
+    #for bone in esqueleto.pose.bones:      
+        #if bone.name.startswith(prefijo):
+        #bone.constraints.clear()
+        #for contraint in list(bone.constraints):
+            #bone.constraints.remove(contraint)
+            
+    bpy.ops.pose.select_all(action='DESELECT')  
+    for bone in esqueleto.pose.bones:    
+        for constraint in list(bone.constraints):
+            #self.report({"INFO"},f"{constraint.name}"
+            #constraint_a_borrar = bone.constraints[contraint]
+            bone.constraints.remove(constraint)
+                           
     pass
 
 
@@ -342,11 +351,12 @@ def eliminar_drivers_rotos_esqueleto(
 #borra hueso segun un prefijo
 def borrar_huesos_prefijo(
                 esqueleto,
-                prefijo
+                prefijo,
+                distinto = False
                 ):
     for bone in esqueleto.data.edit_bones:
         
-        if bone.name.startswith(prefijo):
+        if bone.name.startswith(prefijo) == (not distinto):
             esqueleto.data.edit_bones.remove(bone)
             pass
     
@@ -366,7 +376,38 @@ def selecionar_huesos(
                                
     pass
 
+def renombrar_prefijo_huesos(
+                    esqueleto,
+                    prefijo_actual = "DF.",
+                    prefijo_nuevo = "FK."
+                    ):
+                        
+    bpy.ops.armature.select_all(action='DESELECT')
+     
+    for bone in esqueleto.data.edit_bones:
+        if bone.name.startswith(prefijo_actual):
+            bone.name = prefijo_nuevo + bone.name[3:]
+                               
+    pass
 
+#cambia el color de los huesos 
+def cambiar_color_huesos(
+                        esqueleto,
+                        prefijo,
+                        color_normal,
+                        color_select,
+                        color_activo,
+                        ):
+    bpy.ops.armature.select_all(action='DESELECT')
+     
+    for bone in esqueleto.data.edit_bones:
+        if bone.name.startswith(prefijo):
+                bone.color.palette = "CUSTOM"
+                bone.color.custom.normal = color_normal
+                bone.color.custom.select = color_select
+                bone.color.custom.active = color_activo
+                               
+    pass
 # sistema Fk: Operador encargado de duplicar la armadura base y estructurar los huesos FK
 class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
@@ -550,7 +591,39 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        
+        bpy.ops.object.mode_set(mode='OBJECT')
+        DF_ESQUELETO = bpy.context.active_object
+        
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+        
+        bpy.context.view_layer.objects.active = DF_SELECTION
+        DF_SELECTION.select_set(True)
+        
+        bpy.ops.object.duplicate(linked=False)
+        
+        IK_esqueleto = bpy.context.active_object
+        IK_esqueleto.location.x -= 5
+        IK_esqueleto.name = "IK"
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        borrar_huesos_prefijo(IK_esqueleto,"DF.",True)
+        renombrar_prefijo_huesos(IK_esqueleto,"DF.", "IK.")
+        cambiar_color_huesos(IK_esqueleto,"IK.",
+                            (1.0,0.9,0.6), # naranja
+                            (1.0,0.0,0.0), # rojo
+                            (0.0,1.0,0.0)  # verde
+                            )
+        # limpieza                  
+        bpy.ops.object.mode_set(mode='POSE')
+        
+        eliminar_todo_constraints(self,IK_esqueleto,"IK.")
+        eliminar_drivers_rotos_esqueleto(IK_esqueleto)
+        
+        
+        
         return {'FINISHED'}
     
     
