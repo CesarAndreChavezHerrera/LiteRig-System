@@ -344,7 +344,7 @@ def borrar_huesos_prefijo(
                 esqueleto,
                 prefijo
                 ):
-    for bone in esqueleto.edit_bones:
+    for bone in esqueleto.data.edit_bones:
         
         if bone.name.startswith(prefijo):
             esqueleto.edit_bones.remove(bone)
@@ -353,13 +353,13 @@ def borrar_huesos_prefijo(
     pass                                        
                         
 def selecionar_huesos(
-                    Esqueleto,
-                    Prefijo = "DF."):
+                    esqueleto,
+                    prefijo = "DF."):
                         
     bpy.ops.armature.select_all(action='DESELECT')
      
-    for bone in esqueleto.edit_bones:
-        if bone.ame.startswith(prefijo):
+    for bone in esqueleto.data.edit_bones:
+        if bone.name.startswith(prefijo):
             bone.select = True
             bone.select_head = True
             bone.select_tail = True
@@ -584,7 +584,8 @@ class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"FK.")
         return {'FINISHED'} 
     
     
@@ -598,7 +599,8 @@ class OBJECT_OT_SELECIONAR_IK(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"IK.")
         return {'FINISHED'}  
     
 # selecionar ipi: Operador para seleccionar los elementos del sistema IPI Mocap
@@ -611,10 +613,69 @@ class OBJECT_OT_SELECIONAR_IPI(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"IPI.")
         return {'FINISHED'}  
+ 
+ 
+ 
+# selecionar fijadores de malla.
+class OBJECT_OT_SELECIONAR_FIJADORES(bpy.types.Operator): 
+    """seleciona todos los huesos fijadores de malla"""
+    
+    bl_idname = "object.selecionar_pin" 
+    bl_label = "Seleciona Huesos Fijadores" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"PIN.")
+        return {'FINISHED'}     
+
+# selecionar deformadores de maya .
+class OBJECT_OT_SELECIONAR_DEFORMADORES(bpy.types.Operator): 
+    """seleciona todos los huesos deformadores de malla"""
+    
+    bl_idname = "object.selecionar_df" 
+    bl_label = "Seleciona Huesos deformadores" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"DF.")
+        return {'FINISHED'} 
+    
+# selecionar huesos relacionado para accesorio .
+class OBJECT_OT_SELECIONAR_ACCESORIO(bpy.types.Operator): 
+    """seleciona todos los huesos destinado a controlar accesorios y utileria"""
+    
+    bl_idname = "object.selecionar_prop" 
+    bl_label = "Seleciona Huesos Accesorios" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"PROP.")
+        return {'FINISHED'} 
     
     
+# selecionar huesos relacionado con el cabello .
+class OBJECT_OT_SELECIONAR_CABELLO(bpy.types.Operator): 
+    """seleciona todos los huesos destinado a controlar el cabello"""
+    
+    bl_idname = "object.selecionar_hair" 
+    bl_label = "Seleciona Huesos Cabellos" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        esqueleto = bpy.context.object
+        selecionar_huesos(esqueleto,"HAIR.")
+        return {'FINISHED'}  
+
 #################################################################################
 #                 Control de eliminacion de drivers 
 #################################################################################
@@ -916,6 +977,14 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
         layout = self.layout
         armature = context.object.data
         
+        herramientas = layout.box()
+        herramientas.label(text = "Selecionar huesos")
+        
+        herramientas.operator("object.selecionar_df")
+        herramientas.operator("object.selecionar_pin")
+        herramientas.operator("object.selecionar_prop")
+        herramientas.operator("object.selecionar_hair")
+        
         Selecionar = layout.box()
         Selecionar.label(text="Selecionar sistma")
         Selecionar.operator("object.selecionar_fk")
@@ -950,6 +1019,11 @@ classes = [
     OBJECT_OT_SELECIONAR_FK,
     OBJECT_OT_SELECIONAR_IPI,
     OBJECT_OT_SELECIONAR_IK,
+    
+    OBJECT_OT_SELECIONAR_FIJADORES,
+    OBJECT_OT_SELECIONAR_DEFORMADORES,
+    OBJECT_OT_SELECIONAR_ACCESORIO,
+    OBJECT_OT_SELECIONAR_CABELLO,
     
     OBJECT_OT_ELIMINAR_FK,
     OBJECT_OT_ELIMINAR_IK,
