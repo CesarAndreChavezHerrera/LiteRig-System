@@ -1384,7 +1384,6 @@ class DATA_PT_UI_Control_IPI(bpy.types.Panel):
         box_general = layout.box()
         box_general.label(text="Sistema de control IPI")
         box_general.prop(armature,"mostrar",toggle=True)
-        box_general.prop(armature,"mostrar_controles",toggle=True)
         box_general.prop(armature,"influencia_maestra",slider=True)
         layout.separator()
         
@@ -1468,7 +1467,35 @@ class DATA_PT_UI_Control_IPI(bpy.types.Panel):
         pass
     pass
 
+# menu de control ipi
+class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
+    
+    bl_label = "CONTROL GLOBAL SISTEMAS"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+    
+    @classmethod
+    def poll(cls,context):
+        return context.object is not None and context.object.type == "ARMATURE" and context.mode == 'POSE'
+    pass
+
+
+    def draw(self, context):
+        layout = self.layout
         
+        FK = context.active_object.data.control_rig.fk_prop
+        IK = context.active_object.data.control_rig.ik_prop
+        IPI = context.active_object.data.control_rig.ipi_prop
+        
+        
+        box_general = layout.box()
+        box_general.prop(FK,"mostrar",toggle=True)
+        
+        row = box_general.row()
+        row.prop(IK,"mostrar",toggle=True)
+        row.prop(IK,"mostrar_controles",toggle=True)
+        box_general.prop(IPI,"mostrar",toggle=True)        
         
  # permite selecionar los diferente esqueletos: Panel de herramientas de selección y borrado de subsistemas
 class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
@@ -1519,6 +1546,7 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
 # listado de clases a registrar/desregistrar en Blender
 classes = [
     DATA_PT_UI_CREATE_ARMATURE,
+    DATA_PT_UI_Control_SISTEMAS,
     DATA_PT_UI_Control_FK,
     DATA_PT_UI_Control_IK,
     DATA_PT_UI_Control_IPI,
