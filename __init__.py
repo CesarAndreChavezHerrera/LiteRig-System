@@ -576,7 +576,8 @@ def selecionar_huesos(
 def renombrar_prefijo_huesos(
                     esqueleto,
                     prefijo_actual = "DF.",
-                    prefijo_nuevo = "FK."
+                    prefijo_nuevo  = "FK.",
+                    deform_bone    = False
                     ):
                         
     bpy.ops.armature.select_all(action='DESELECT')
@@ -584,6 +585,7 @@ def renombrar_prefijo_huesos(
     for bone in esqueleto.data.edit_bones:
         if bone.name.startswith(prefijo_actual):
             bone.name = prefijo_nuevo + bone.name[3:]
+            bone.use_deform = deform_bone
                                
     pass
 
@@ -787,8 +789,10 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
     
     # Código Python que se ejecuta al presionar el botton
-    def execute(self, context): 
+    def execute(self, context):
         
+        # esqueleto principal
+        armature  = context.object.data
         ik        = armature.control_rig
         combinar  = ik.crear_prop.combinar_IK  
         
@@ -821,13 +825,80 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         eliminar_todo_constraints(self,IK_esqueleto,PREFIJO_HUESOS_IK)
         eliminar_drivers_rotos_esqueleto(IK_esqueleto)
         
-        vacio = len(IK_esqueleto.data.bones) == 0   
-        if not vacio:
-
-            
-          
+        borrar_ik = False
         
+        if not len(IK_esqueleto.data.bones) == 0 :
+            data_path = "control_rig.ik_prop."
+            
+            for bone in IK_esqueleto.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                    
+                    if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
+                        vincular_driver(propiedad,bone,data_path,armature)
+                
+                pass
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            bpy.ops.object.mode_set(mode='POSE')
+            
+            for bone in DF_ESQUELETO.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
+                    
+                    if bone.name.startswith(df_prefijo):
+                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
+                        constraint_hueso.name = "IK_ROTATION"
+                        constraint_hueso.target = IK_esqueleto
+                        constraint_hueso.subtarget = PREFIJO_HUESOS_IK + bone.name[3:]
+                        
+                        vincular_driver(propiedad,
+                                            constraint_hueso,
+                                            data_path,armature,
+                                            "influencia_maestra",
+                                            "influence","")
+                        
+                        pass
+                    
+                pass
+                context.object.update_tag(refresh={'DATA'})
+                
+        else:
+            # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
+
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.context.view_layer.objects.active = IK_esqueleto
+            IK_esqueleto.select_set(True)
+            bpy.ops.object.delete(use_global=False)
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
+            borrar_ik = True
+        
+        
+        if combinar:
+            if not borrar_ik:
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+                ik_join = bpy.data.objects.get(IK_esqueleto.name)
+                df_join = bpy.data.objects.get(DF_ESQUELETO.name)
+                
+                df_join.select_set(True)
+                ik_join.select_set(True)
+                
+                bpy.context.view_layer.objects.active = df_join
+                bpy.ops.object.join()
+            else:
+                self.report({"INFO"},"Sistema IK No creado")
+        
+        else:
+            
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
             pass
+        
         return {'FINISHED'}
     
     
@@ -1467,7 +1538,7 @@ class DATA_PT_UI_Control_IPI(bpy.types.Panel):
         pass
     pass
 
-# menu de control ipi
+# menu de control global 
 class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
     
     bl_label = "CONTROL GLOBAL SISTEMAS"
@@ -1495,7 +1566,8 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         row = box_general.row()
         row.prop(IK,"mostrar",toggle=True)
         row.prop(IK,"mostrar_controles",toggle=True)
-        box_general.prop(IPI,"mostrar",toggle=True)        
+        box_general.prop(IPI,"mostrar",toggle=True) 
+               
         
  # permite selecionar los diferente esqueletos: Panel de herramientas de selección y borrado de subsistemas
 class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
