@@ -617,162 +617,120 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        
         armature  = context.object.data
-        fk        = armature.control_rig  
-        modo      = context.mode
-        combinar  = fk.crear_prop.combinar_FK
+        fk        = armature.control_rig
+        combinar  = fk.crear_prop.combinar_FK 
         
-        if modo == "OBJECT":
-            
-            bpy.ops.object.mode_set(mode='OBJECT')
+        
+         
+        bpy.ops.object.mode_set(mode='OBJECT')
+        DF_ESQUELETO = bpy.context.active_object
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        #selecionamos el esqueleto base 
+        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+        bpy.context.view_layer.objects.active = DF_SELECTION
+        DF_SELECTION.select_set(True)
+        
+        bpy.ops.object.duplicate(linked=False)
+        
+        FK_esqueleto = bpy.context.active_object
+        FK_esqueleto.location.x += 5
+        FK_esqueleto.name = "FK"
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        # borra todo los huesos que no sean deformacion                     
+        borrar_huesos_prefijo(FK_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
 
-            deformador_esqueleto = bpy.context.active_object
+        renombrar_prefijo_huesos(FK_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_FK)
+                                
+        cambiar_color_huesos(FK_esqueleto,PREFIJO_HUESOS_FK,
+                            (0,0.4,0.0), # verde oscuro
+                            (1.0,0.0,0.0), # rojo
+                            (0.0,1.0,0.0)  # verde
+                            )
+        
+        #limpieza 
+        bpy.ops.object.mode_set(mode='POSE')
+        eliminar_todo_constraints(self,FK_esqueleto,PREFIJO_HUESOS_IK)
+        eliminar_drivers_rotos_esqueleto(FK_esqueleto)
+        
+        borrar_ik = False
+        
+        if not len(FK_esqueleto.data.bones) == 0 :
+            data_path = "control_rig.fk_prop."
             
-            # Clona la armadura base para generar el esqueleto de control FK
-            bpy.ops.object.duplicate(linked=False)
-            
-            fk_esqueleto = bpy.context.active_object
-            fk_esqueleto.location.x += 5
-            fk_esqueleto.name = "FK"
-            
-            bpy.ops.object.mode_set(mode='EDIT')
-            
-            #borra los huesos que no tengan el prefijo DF.
-            huesos_a_borrar = []
-            for bone in fk_esqueleto.data.edit_bones:
-                if not bone.name.startswith(PREFIJO_HUESOS_DEFORMACION):
-                    #huesos_a_borrar.append(bone)
-                    fk_esqueleto.data.edit_bones.remove(bone)
+            for bone in FK_esqueleto.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
                     
-            # 2. Eliminar los huesos encontrados
-            #for bone in huesos_a_borrar:
-            #    fk_esqueleto.data.edit_bones.remove(bone)
-            
-
-            # 3. Ajustar los huesos restantes (los DF.): Renombra a FK. y asigna colores en el viewport
-            for bone in fk_esqueleto.data.edit_bones:
-                bone.use_deform = False
-                bone.name = PREFIJO_HUESOS_FK + bone.name[3:]
-                
-                bone.color.palette = "CUSTOM"
-                bone.color.custom.normal = (0.0,1.0,0.0)
-                bone.color.custom.select = (1.0, 0.0, 0.0)
-                bone.color.custom.active = (1.0,1.0, 1.0)
-                
-            bpy.ops.object.mode_set(mode='OBJECT')    
-            
-            
-            # si el esqueleto FK NO esta vacio 
-            vacio = len(fk_esqueleto.data.bones) == 0             
-            if not len(fk_esqueleto.data.bones) == 0:
-                
-                bpy.ops.object.mode_set(mode='POSE')
-                
-                ############################################
-                # encargado de conectar la propiedad mostrar con su propiedad hide
-                ###########################################
-                data_path = "control_rig.fk_prop."
-                MAPEO_NOMBRE_BONE_PROPIEDADES_MOSTRAR = {
-                    "FK.CABEZA."   : "mostrar_cabeza",
-                    "FK.ESPALDA."  : "mostrar_espalda",
-                    
-                    "FK.BRAZO_R."  : "mostrar_brazo_r",
-                    "FK.MANO_R."   : "mostrar_mano_r",
-                    "FK.PIERNA_R." : "mostrar_pierna_r",
-                    "FK.PIE_R."    : "mostrar_pie_r",
-                    
-                    "FK.BRAZO_L."  : "mostrar_brazo_l",
-                    "FK.MANO_L."   : "mostrar_mano_l",
-                    "FK.PIERNA_L." : "mostrar_pierna_l",
-                    "FK.PIE_L."    : "mostrar_pie_l",
-                }
-                # Aplica drivers para ocultar/mostrar huesos FK según las propiedades
-                for bone in fk_esqueleto.pose.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_MOSTRAR.items():
+                    if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
+                        vincular_driver(propiedad,bone,data_path,armature)
                         
-                        if bone.name.startswith(prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
-                
-                ############################################
-                # encargado de conectar la propiedad mostrar con su propiedad hide
-                ###########################################
-                data_path = "control_rig.fk_prop."
-                MAPEO_NOMBRE_BONE_PROPIEDADES_INFLUENCIA = {
-                    "DF.CABEZA."   : "influencia_cabeza",
-                    "DF.ESPALDA."  : "influencia_espalda",
+                        
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            bpy.ops.object.mode_set(mode='POSE')
+            
+            for bone in DF_ESQUELETO.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
                     
-                    "DF.BRAZO_R."  : "influencia_brazo_r",
-                    "DF.MANO_R."   : "influencia_mano_r",
-                    "DF.PIERNA_R." : "influencia_pierna_r",
-                    "DF.PIE_R."    : "influencia_pie_r",
-                    
-                    "DF.BRAZO_L."  : "influencia_brazo_l",
-                    "DF.MANO_L."   : "influencia_mano_l",
-                    "DF.PIERNA_L." : "influencia_pierna_l",
-                    "DF.PIE_L."    : "influencia_pie_l",
-                }
-                # entra al esqueleto original 
-                bpy.ops.object.mode_set(mode='OBJECT')
-                bpy.ops.object.select_all(action='DESELECT')
-                bpy.context.view_layer.objects.active = deformador_esqueleto            
-                bpy.ops.object.mode_set(mode='POSE')
-                
-                # Asigna restricciones Copy Rotation a la armadura base controladas por el esqueleto FK
-                for bone in deformador_esqueleto.pose.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_BONE_PROPIEDADES_INFLUENCIA.items():
-                        if bone.name.startswith(prefijo):
-                            
-                            constraint_hueso = bone.constraints.new(type='COPY_ROTATION')
-                            constraint_hueso.name = "FK_ROTATION"
-                            constraint_hueso.target = fk_esqueleto
-                            constraint_hueso.subtarget = PREFIJO_HUESOS_FK+bone.name[3:]
-                            
-                            vincular_driver(propiedad,
+                    if bone.name.startswith(df_prefijo):
+                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
+                        constraint_hueso.name = "FK_ROTATION"
+                        constraint_hueso.target = FK_esqueleto
+                        constraint_hueso.subtarget = PREFIJO_HUESOS_FK + bone.name[3:]
+                        
+                        vincular_driver(propiedad,
                                             constraint_hueso,
                                             data_path,armature,
                                             "influencia_maestra",
                                             "influence","")
-                            
-                            
-                    pass
+                        
+                        pass
                     
-                    
-                context.object.update_tag(refresh={'DATA'})
-            
-            else:
-                # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
-                bpy.ops.object.delete(use_global=False)
-                bpy.ops.object.select_all(action='DESELECT')
-                bpy.context.view_layer.objects.active = deformador_esqueleto
-                deformador_esqueleto.select_set(True)
-                
-
-            # Fusiona las armaduras si la opción 'combinar' está activa
-            if combinar:
-                # cambia a modo objeto 
-                bpy.ops.object.mode_set(mode='OBJECT')
-                
-                #seleciona ambos objeto
-                fk_esqueleto_join         = bpy.data.objects.get(fk_esqueleto.name)
-                deformador_esqueleto_join = bpy.data.objects.get(deformador_esqueleto.name)
-                fk_esqueleto_join.select_set(True)
-                deformador_esqueleto_join.select_set(True)
-                
-                # combierte el esqueleto deformador primero
-                bpy.context.view_layer.objects.active = deformador_esqueleto_join
-                bpy.ops.object.join()
-                
                 pass
-            else:
+                context.object.update_tag(refresh={'DATA'})
+        else:
+            # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
+
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.context.view_layer.objects.active = FK_esqueleto
+            FK_esqueleto.select_set(True)
+            bpy.ops.object.delete(use_global=False)
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
+            borrar_ik = True
+        
+        
+        if combinar:
+            if not borrar_ik:
                 bpy.ops.object.mode_set(mode='OBJECT')
-                #Selecionar el esqueleto original 
-                bpy.ops.object.select_all(action='DESELECT')
-                bpy.context.view_layer.objects.active = deformador_esqueleto
-                deformador_esqueleto.select_set(True)
-            pass 
+                
+                fk_join = bpy.data.objects.get(FK_esqueleto.name)
+                df_join = bpy.data.objects.get(DF_ESQUELETO.name)
+                
+                df_join.select_set(True)
+                fk_join.select_set(True)
+                
+                bpy.context.view_layer.objects.active = df_join
+                bpy.ops.object.join()
+            else:
+                self.report({"INFO"},"Sistema IK No creado")
         
-        
+        else:
+            
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
+            
+            self.report({"INFO"},"Se combino el esqueleto IK con el esqueleto DF")
+            pass
+    
         return {'FINISHED'}
 
 
@@ -897,6 +855,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             bpy.ops.object.select_all(action='DESELECT')
             bpy.context.view_layer.objects.active = DF_ESQUELETO
             DF_ESQUELETO.select_set(True)
+            
+            self.report({"INFO"},"Se combino el esqueleto IK con el esqueleto DF")
             pass
         
         return {'FINISHED'}
