@@ -439,7 +439,7 @@ def crear_var_driver(driver,
     var.type = 'SINGLE_PROP'
     var.targets[0].id_type = id_type
     var.targets[0].id = id_target
-    var.targets[0].data_path = data_path+nombre
+    var.targets[0].data_path = f"{data_path+nombre}"
     return var
 
 # reutilizar variable: Conecta la propiedad de la UI con la propiedad de un hueso/constraint usando drivers
@@ -644,7 +644,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         bpy.ops.object.duplicate(linked=False)
         
         FK_esqueleto = bpy.context.active_object
-        FK_esqueleto.location.x += 1
+        #FK_esqueleto.location.x += 1
         FK_esqueleto.name = "FK"
         
         bpy.ops.object.mode_set(mode='EDIT')
@@ -776,7 +776,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         bpy.ops.object.duplicate(linked=False)
         
         IK_esqueleto = bpy.context.active_object
-        IK_esqueleto.location.x -= 1
+        #IK_esqueleto.location.x -= 1
         IK_esqueleto.name = "IK"
         
         bpy.ops.object.mode_set(mode='EDIT')
@@ -867,7 +867,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 control_cabeza.use_connect  = False
                 control_cabeza.use_deform   = False
                 control_cabeza.parent       = None
-                control_cabeza.display_type = "BBONE"
+                #control_cabeza.display_type = "BBONE"
                 
                 
                 # antes de pasar a modo pose obtenemos nombre del hueso duplicado
@@ -924,7 +924,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 ik_mano.use_connect  = False
                 ik_mano.use_deform   = False
                 ik_mano.parent       = None
-                ik_mano.display_type = "BBONE"
+                #ik_mano.display_type = "BBONE"
                 
                  # antes de pasar a modo pose obtenemos nombre del hueso duplicado
                 
@@ -945,7 +945,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     pole.use_connect  = False
                     pole.use_deform   = False
                     pole.parent       = ik_mano
-                    pole.display_type = "BBONE"
+                    #pole.display_type = "BBONE"
                     
                     nombre_pole = pole.name
                     nombre_hueso = ik_mano.name
