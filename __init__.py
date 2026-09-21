@@ -179,7 +179,11 @@ def Actualizar_influencia(self,context):
 
 
 ######################################################
+#
+#
 #           De claracion de propiedades 
+#
+#
 ####################################################
 
 # propiedades generales: Opciones globales para combinar sistemas generados con la armadura base
@@ -205,6 +209,9 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
     pass
 
 
+######################################################################################
+#                  PROPIEDADES ASOCIADA A Deformadores
+
 # propiedades DF: permite mostrar y desactivar la selecion en modo pose 
 class ARMATURE_SISTEMA_DF_PROPIEDADES(bpy.types.PropertyGroup):
     
@@ -212,6 +219,9 @@ class ARMATURE_SISTEMA_DF_PROPIEDADES(bpy.types.PropertyGroup):
     activar_selecion : crear_propiedad_switch("Activar Selecion DF")
     pass
 
+
+######################################################################################
+#                         PROPIEDADES ASOCIADA A FK
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
     
@@ -270,7 +280,10 @@ class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
     mostrar_pie_r      : crear_propiedad_switch("Mostrar Pie R FK")
     influencia_pie_r   : crear_propiedad_sliders( "Influencia Pie R FK")
     pass
-    
+
+
+######################################################################################
+#                         PROPIEDADES ASOCIADA A IK    
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
     
@@ -332,7 +345,9 @@ class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
 
     pass
 
-# propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
+######################################################################################
+#                         PROPIEDADES ASOCIADA A IPI
+# propiedades IPI: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_IPI_PROPIEDADES(bpy.types.PropertyGroup):
     
 
@@ -392,6 +407,8 @@ class ARMATURE_SISTEMA_IPI_PROPIEDADES(bpy.types.PropertyGroup):
     influencia_pie_r   : crear_propiedad_sliders( "Influencia Pie R IPI")
 
     pass
+
+
 ######################################################
 #          Enlazamiento de propiedades con objeto 
 ####################################################
@@ -429,6 +446,10 @@ def unregister_properties():
         del bpy.types.Armature.control_rig
     pass
         
+
+
+
+
 ###########################################################
 #
 #     BOTONES
@@ -608,6 +629,7 @@ def renombrar_prefijo_huesos(
                                
     pass
 
+
 #cambia el color de los huesos 
 def cambiar_color_huesos(
                         esqueleto,
@@ -627,6 +649,19 @@ def cambiar_color_huesos(
                                
     pass
 
+
+
+
+################################################################################
+#
+#
+#             Funcionamiento de botones
+#
+#
+###############################################################################
+
+###########################################################################
+#                    Conectar huesos deformadores
 
 class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
     """Vincula los botones de mostrar y Selecionar del esqueleto base """
@@ -686,6 +721,8 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
         pass
     pass
 
+#################################################################################
+#                    Sistema de generacion FK
 
 # sistema Fk: Operador encargado de duplicar la armadura base y estructurar los huesos FK
 class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator): 
@@ -816,7 +853,8 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
 
 
 
-
+#################################################################################
+#                    Sistema de generacion IK
 
 # sistema IK: Operador reservado para la generación del sistema Cinemática Inversa
 class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator): 
@@ -1111,7 +1149,10 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         
         return {'FINISHED'}
     
-    
+
+#################################################################################
+#                    Sistema de generacion IPI
+ 
 # sistema IPI: Operador reservado para la generación del sistema retargeting de iPi Mocap
 class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
@@ -1126,11 +1167,17 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         return {'FINISHED'}  
 
 
+
+
+
+
+
+
+
+
 ##############################################################
 #                 LIMPIEZA Y CORRECCIONES 
 #################################################################
-
-
 
 # selecionar FK: Operador para seleccionar rápidamente el conjunto de controles FK
 class OBJECT_OT_SELECIONAR_FK(bpy.types.Operator): 
@@ -1234,6 +1281,12 @@ class OBJECT_OT_SELECIONAR_CABELLO(bpy.types.Operator):
         selecionar_huesos(esqueleto,PREFIJO_HUESOS_CABELLO)
         return {'FINISHED'}  
 
+
+
+
+
+
+
 #################################################################################
 #                 Control de eliminacion de drivers 
 #################################################################################
@@ -1281,6 +1334,7 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
 
 ####################################################
 #                   Eliminar IK
+####################################################
 class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator): 
     """Borra la vinculacion con el sistema IK"""
     
@@ -1316,6 +1370,8 @@ class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator):
     
 #################################################################################
 #                            Borra sistema IPI
+######################################################################################
+
 class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator): 
     """Borra la vinculacion con el sistema IPI"""
     
@@ -1351,11 +1407,16 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
      
 ###########################################################
 #
-#     Vistas UI
+#
+#     SECCION ENCARGADA DE CONTROL DE MENUS 
+#
 #
 ###########################################################
    
-    
+
+######################################################################
+#              menu desplegable de generalidades
+######################################################################   
 # MENU de generalidades: Panel UI para la generación inicial de armaduras en Modo Objeto
 class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
     
@@ -1394,6 +1455,9 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
     pass
 
 
+######################################################################
+#                   menu desplegable de control FK
+######################################################################
     
 # menu en propiedades sistema FK: Panel para controlar visibilidad e influencia FK durante la animación en Pose Mode
 class DATA_PT_UI_Control_FK(bpy.types.Panel):
@@ -1518,7 +1582,11 @@ class DATA_PT_UI_Control_FK(bpy.types.Panel):
         pass
     pass
 
-# menu de control ik
+
+
+######################################################################
+#                   menu desplegable de control ik
+######################################################################
 class DATA_PT_UI_Control_IK(bpy.types.Panel):
     
     bl_label = "Sistema de control IK"
@@ -1643,6 +1711,10 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         pass
     pass
 
+
+######################################################################
+#              menu desplegable de control IPI MOCAP
+######################################################################
 # menu de control ipi
 class DATA_PT_UI_Control_IPI(bpy.types.Panel):
     
@@ -1748,6 +1820,10 @@ class DATA_PT_UI_Control_IPI(bpy.types.Panel):
         pass
     pass
 
+######################################################################
+#       Menu de control de vistas de sistemas en modo pose 
+######################################################################
+
 # menu de control global 
 class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
     
@@ -1784,6 +1860,11 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         row.prop(IK,"mostrar_controles",toggle=True)
         box_general.prop(IPI,"mostrar",toggle=True) 
                
+
+
+######################################################################
+#         menu desplegable de control en modo editicion
+######################################################################
         
  # permite selecionar los diferente esqueletos: Panel de herramientas de selección y borrado de subsistemas
 class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
