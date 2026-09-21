@@ -1095,9 +1095,185 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 pass
             else:
                 self.report({"INFO"},"Hueso del brazo R no encontrado")
+                pass
+            
+            ##############################################################
+            # brazo L
+            
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            hueso_mano_l_name = "IK.MANO_L.mano.L"                              # nombre del hueso de la cabeza
+            selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
+            hueso_mano_l = IK_esqueleto.data.edit_bones.get(hueso_mano_l_name)        # busca el hueso de la mano
+            
+            if not hueso_mano_l == None:
+                
+                ik_mano = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+"mano_L")
+                
+                mover_hueso         = Vector((0.0,0.0,0.0))                # define cuanto se desplazara
+                ik_mano.head = hueso_mano_l.head + mover_hueso             # mueve la cabeza del hueso
+                ik_mano.tail = hueso_mano_l.tail + mover_hueso             # mueve la cola del hueso
+                
+                # configuracion del hueso 
+                ik_mano.use_connect  = False
+                ik_mano.use_deform   = False
+                ik_mano.parent       = None
+                #ik_mano.display_type = "BBONE"
+                
+                 # antes de pasar a modo pose obtenemos nombre del hueso duplicado
+                
+                
+                # creacion del polea 
+                codo_name = "IK.BRAZO_L.antebrazo.L"
+                selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False) 
+                hueso_codo = IK_esqueleto.data.edit_bones.get(codo_name)
+                
+                if not hueso_codo == None:
+                    
+                    pole = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+"pole_L")
+                    mover_pole  = Vector((0.0,0.5,0.0))                # define cuanto se desplazara
+                    pole.head = hueso_codo.head + mover_pole             # mueve la cabeza del hueso
+                    pole.tail = hueso_codo.tail + mover_pole             # mueve la cola del hueso
+                
+                                  # configuracion del hueso 
+                    pole.use_connect  = False
+                    pole.use_deform   = False
+                    pole.parent       = ik_mano
+                    #pole.display_type = "BBONE"
+                    
+                    nombre_pole = pole.name
+                    nombre_hueso = ik_mano.name
+                    # logica del constraints y drivers 
+                    bpy.ops.object.mode_set(mode='POSE')
+                    
+                    
+                    
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    hueso_pose          = IK_esqueleto.pose.bones.get(codo_name)
+                    IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
+                    hueso_mano_l_pose   = IK_esqueleto.pose.bones.get(hueso_mano_l_name)
+                    
+                    # conecta el control con el boton mostrar 
+                    
+                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_pose,data_path,armature,"mostrar_controles")
+                    
+                    # añade un contraitns                
+                    constraint_hueso = hueso_pose.constraints.new(type = "IK")
+                    constraint_hueso.name            = "control IK"
+                    constraint_hueso.target          = IK_esqueleto
+                    constraint_hueso.subtarget       = IK.name
+                    constraint_hueso.chain_count     = 2
+                    constraint_hueso.pole_target     = IK_esqueleto
+                    constraint_hueso.pole_subtarget  = pole_pose.name
+                    constraint_hueso.pole_angle      = math.radians(-90)
+                    #constraint_hueso.track_axis = "TRACK_Z"
+                    
+                    
+                    pass
+                else:
+                    self.report({"INFO"},"Hueso del codo l no encontrado")
+                    pass
+                
+                
+                pass
+            else:
+                self.report({"INFO"},"Hueso del brazo L no encontrado")
+                pass
                 
                 
                 
+            ##############################################################
+            # Pierna        R
+            
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            prefijo         = "IK.PIE_R."
+            hueso_ik_name   = "pie_R"
+            hueso_pie_name  = prefijo + "pie.R"                              # nombre del hueso de la cabeza
+            
+            codo_name       = "IK.PIERNA_R.antepierna.R"
+            pole_name       = "pole_R"
+            selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
+            hueso_base = IK_esqueleto.data.edit_bones.get(hueso_pie_name)        # busca el hueso de la mano
+            
+            if not hueso_base == None:
+                
+                ik_controler = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+hueso_ik_name)
+                
+                mover_hueso         = Vector((0.0,0.0,0.0))                # define cuanto se desplazara
+                ik_controler.head = hueso_base.head + mover_hueso             # mueve la cabeza del hueso
+                ik_controler.tail = hueso_base.tail + mover_hueso             # mueve la cola del hueso
+                
+                # configuracion del hueso 
+                ik_controler.use_connect  = False
+                ik_controler.use_deform   = False
+                ik_controler.parent       = None
+                #ik_mano.display_type = "BBONE"
+                
+                 # antes de pasar a modo pose obtenemos nombre del hueso duplicado
+                
+                
+                # creacion del polea 
+                
+                selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False) 
+                hueso_codo = IK_esqueleto.data.edit_bones.get(codo_name)
+                
+                if not hueso_codo == None:
+                    
+                    pole = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+pole_name)
+                    mover_pole  = Vector((0.0,-0.25,0.0))                # define cuanto se desplazara
+                    pole.head = hueso_codo.head + mover_pole             # mueve la cabeza del hueso
+                    pole.tail = hueso_codo.head + mover_pole -  Vector((0.0,0.15,0.0))          # mueve la cola del hueso
+                
+                                  # configuracion del hueso 
+                    pole.use_connect  = False
+                    pole.use_deform   = False
+                    pole.parent       = ik_controler
+                    #pole.display_type = "BBONE"
+                    
+                    nombre_pole = pole.name
+                    nombre_hueso = ik_controler.name
+                    # logica del constraints y drivers 
+                    bpy.ops.object.mode_set(mode='POSE')
+                    
+                    
+                    
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    
+                    constrainst_hueso   = IK_esqueleto.pose.bones.get(codo_name)       #hueso a quien se aplicara el constraint
+                    IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)    #nombre del hueso del target del IK
+                    pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)     # hueso a aplicar como polea
+                    
+                    
+                    # conecta el control con el boton mostrar 
+                    
+                    vincular_driver("",IK               ,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
+                    
+                    # añade un contraitns                
+                    constraint_hueso = constrainst_hueso.constraints.new(type = "IK")
+                    constraint_hueso.name            = "control IK"
+                    constraint_hueso.target          = IK_esqueleto
+                    constraint_hueso.subtarget       = IK.name
+                    constraint_hueso.chain_count     = 2
+                    constraint_hueso.pole_target     = IK_esqueleto
+                    constraint_hueso.pole_subtarget  = pole_hueso.name
+                    constraint_hueso.pole_angle      = math.radians(90)
+                    #constraint_hueso.track_axis = "TRACK_Z"
+                    
+                    
+                    pass
+                else:
+                    self.report({"INFO"},"Hueso del rodilla R no encontrado")
+                    pass
+                
+                
+                pass
+            else:
+                self.report({"INFO"},"Hueso del pierna R no encontrado")
+                pass    
                 
                 
                 
