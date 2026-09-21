@@ -755,6 +755,13 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         #FK_esqueleto.location.x += 1
         FK_esqueleto.name = "FK"
         
+                
+        if FK_esqueleto.data and FK_esqueleto.data.animation_data and FK_esqueleto.data.animation_data.drivers:
+            for fcurve in list(FK_esqueleto.data.animation_data.drivers):
+                FK_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
+                
+                
+                
         bpy.ops.object.mode_set(mode='EDIT')
         
         # borra todo los huesos que no sean deformacion                     
@@ -888,6 +895,11 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         #IK_esqueleto.location.x -= 1
         IK_esqueleto.name = "IK"
         
+        if IK_esqueleto.data and IK_esqueleto.data.animation_data and IK_esqueleto.data.animation_data.drivers:
+            for fcurve in list(IK_esqueleto.data.animation_data.drivers):
+                IK_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
+        
+        
         bpy.ops.object.mode_set(mode='EDIT')
         borrar_huesos_prefijo(IK_esqueleto,PREFIJO_HUESOS_DEFORMACION,True)
         renombrar_prefijo_huesos(IK_esqueleto,PREFIJO_HUESOS_DEFORMACION, PREFIJO_HUESOS_IK)
@@ -923,8 +935,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
                     
                     if bone.name.startswith(df_prefijo):
-                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
-                        constraint_hueso.name = "IK_ROTATION"
+                        constraint_hueso = bone.constraints.new(type = "COPY_TRANSFORMS")
+                        constraint_hueso.name = "IK_TRANSFORMS"
                         constraint_hueso.target = IK_esqueleto
                         constraint_hueso.subtarget = PREFIJO_HUESOS_IK + bone.name[3:]
                         
@@ -1238,8 +1250,6 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # logica del constraints y drivers 
                     bpy.ops.object.mode_set(mode='POSE')
                     
-                    
-                    
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     
                     constrainst_hueso   = IK_esqueleto.pose.bones.get(codo_name)       #hueso a quien se aplicara el constraint
@@ -1274,8 +1284,153 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             else:
                 self.report({"INFO"},"Hueso del pierna R no encontrado")
                 pass    
+            
+            
+            ##############################################################
+            # Pierna        L
+            
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            prefijo         = "IK.PIE_L."
+            hueso_ik_name   = "pie_L"
+            hueso_pie_name  = prefijo + "pie.L"                              # nombre del hueso de la cabeza
+            
+            codo_name       = "IK.PIERNA_L.antepierna.L"
+            pole_name       = "pole_L"
+            selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
+            hueso_base = IK_esqueleto.data.edit_bones.get(hueso_pie_name)        # busca el hueso de la mano
+            
+            if not hueso_base == None:
+                
+                ik_controler = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+hueso_ik_name)
+                
+                mover_hueso         = Vector((0.0,0.0,0.0))                # define cuanto se desplazara
+                ik_controler.head = hueso_base.head + mover_hueso             # mueve la cabeza del hueso
+                ik_controler.tail = hueso_base.tail + mover_hueso             # mueve la cola del hueso
+                
+                # configuracion del hueso 
+                ik_controler.use_connect  = False
+                ik_controler.use_deform   = False
+                ik_controler.parent       = None
+                #ik_mano.display_type = "BBONE"
+                
+                 # antes de pasar a modo pose obtenemos nombre del hueso duplicado
                 
                 
+                # creacion del polea 
+                
+                selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False) 
+                hueso_codo = IK_esqueleto.data.edit_bones.get(codo_name)
+                
+                if not hueso_codo == None:
+                    
+                    pole = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+pole_name)
+                    mover_pole  = Vector((0.0,-0.25,0.0))                # define cuanto se desplazara
+                    pole.head = hueso_codo.head + mover_pole             # mueve la cabeza del hueso
+                    pole.tail = hueso_codo.head + mover_pole -  Vector((0.0,0.15,0.0))          # mueve la cola del hueso
+                
+                                  # configuracion del hueso 
+                    pole.use_connect  = False
+                    pole.use_deform   = False
+                    pole.parent       = ik_controler
+                    #pole.display_type = "BBONE"
+                    
+                    nombre_pole = pole.name
+                    nombre_hueso = ik_controler.name
+                    # logica del constraints y drivers 
+                    bpy.ops.object.mode_set(mode='POSE')
+                    
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    
+                    constrainst_hueso   = IK_esqueleto.pose.bones.get(codo_name)       #hueso a quien se aplicara el constraint
+                    IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)    #nombre del hueso del target del IK
+                    pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)     # hueso a aplicar como polea
+                    
+                    
+                    # conecta el control con el boton mostrar 
+                    
+                    vincular_driver("",IK               ,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
+                    
+                    # añade un contraitns                
+                    constraint_hueso = constrainst_hueso.constraints.new(type = "IK")
+                    constraint_hueso.name            = "control IK"
+                    constraint_hueso.target          = IK_esqueleto
+                    constraint_hueso.subtarget       = IK.name
+                    constraint_hueso.chain_count     = 2
+                    constraint_hueso.pole_target     = IK_esqueleto
+                    constraint_hueso.pole_subtarget  = pole_hueso.name
+                    constraint_hueso.pole_angle      = math.radians(90)
+                    #constraint_hueso.track_axis = "TRACK_Z"
+                    
+                    
+                    pass
+                else:
+                    self.report({"INFO"},"Hueso del rodilla L no encontrado")
+                    pass
+                
+                
+                pass
+            else:
+                self.report({"INFO"},"Hueso del pierna L no encontrado")
+                pass       
+                
+            
+            #######################################################################
+            # Cadera 
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            hueso_objetivo_name = "IK.ESPALDA.espalda"                              # nombre del hueso de la cabeza
+            hueso_ik_nombre     = "espalda"
+            mover_hueso         = Vector((0.0,0.0,0.0))          # define cuanto se desplazara
+            
+            selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)                 # des seleciona todos los huesos en modo edition
+            
+            hueso_objetivo = IK_esqueleto.data.edit_bones.get(hueso_objetivo_name)  # busca el hueso de la cabeza
+            
+            if not hueso_cabeza == None: # si encuentra el hueso 
+                
+                # duplica la cabeza 
+                hueso_ik = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+hueso_ik_nombre)
+
+                hueso_ik.head = hueso_objetivo.head + mover_hueso # mueve la cabeza del hueso
+                hueso_ik.tail = hueso_objetivo.tail + mover_hueso # mueve la cola del hueso
+                
+                # configuracion del hueso 
+                hueso_ik.use_connect  = False
+                hueso_ik.use_deform   = False
+                hueso_ik.parent       = None
+                #control_cabeza.display_type = "BBONE"
+                
+                
+                # antes de pasar a modo pose obtenemos nombre del hueso duplicado
+                nombre_hueso_ik = hueso_ik.name
+                bpy.ops.object.mode_set(mode='POSE')
+                
+                # se obtiene los hueso de control y el uso que lo aplicara 
+                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                
+                # conecta el control con el boton mostrar 
+                vincular_driver(
+                                "",
+                                hueso_ik_pose,
+                                data_path,
+                                armature,
+                                "mostrar_controles",
+                                "hide","not")
+                
+                # añade un contraitns                
+                constraint_hueso = hueso_objetivo.constraints.new(type = "COPY_LOCATION")
+                constraint_hueso.name       = "mover cadera"
+                constraint_hueso.target     = IK_esqueleto
+                constraint_hueso.subtarget  = hueso_ik_pose.name
+                #constraint_hueso.track_axis = "TRACK_Z"
+                
+                
+                
+            else:
+                self.report({"INFO"},"Hueso de la cadera no encontrado")
                 
             #cambiamos de color todos los huesos 
             bpy.ops.object.mode_set(mode='EDIT')
