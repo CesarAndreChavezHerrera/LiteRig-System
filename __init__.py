@@ -187,7 +187,7 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
     
     # propiedad ACTIVAR COMBINAR el esqueleto FK con el esqueleto base
     combinar_FK: crear_propiedad_switch(
-        "Combinar IK",
+        "Combinar FK",
         "Habilita que despues de crear el sistema IK lo combine con el esqueleto base"
         )
     
@@ -204,6 +204,13 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
         )
     pass
 
+
+# propiedades DF: permite mostrar y desactivar la selecion en modo pose 
+class ARMATURE_SISTEMA_DF_PROPIEDADES(bpy.types.PropertyGroup):
+    
+    mostrar          : crear_propiedad_switch("Mostrar DF")
+    activar_selecion : crear_propiedad_switch("Activar Selecion DF")
+    pass
 
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
@@ -394,9 +401,10 @@ class ARMATURE_SISTEMA_IPI_PROPIEDADES(bpy.types.PropertyGroup):
 class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
     
     crear_prop  : bpy.props.PointerProperty(type = ARMATURE_GENERAL_PROPIEDADES)
+    df_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_DF_PROPIEDADES)
     fk_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_FK_PROPIEDADES)
     ik_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IK_PROPIEDADES)
-    ipi_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IPI_PROPIEDADES)
+    ipi_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IPI_PROPIEDADES)
     pass
 
 ######################################################
@@ -523,9 +531,11 @@ def eliminar_drivers_rotos_esqueleto(
     # actualiza los drivers 
     depsgraph = bpy.context.evaluated_depsgraph_get()
     depsgraph.update()
-    
+    if not esqueleto.animation_data:
+        return
+        
     anim_data = esqueleto.animation_data    
-    
+
     # evalua los drivers de los huesos   
     for fcurve in list(anim_data.drivers):
         
@@ -616,6 +626,67 @@ def cambiar_color_huesos(
                 bone.color.custom.active = color_activo
                                
     pass
+
+
+class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
+    """Vincula los botones de mostrar y Selecionar del esqueleto base """
+    
+    bl_idname = "object.configurar_df" 
+    bl_label = "Configurar_df" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    def execute(self, context):
+        armature  = context.object.data
+        
+        bpy.ops.object.mode_set(mode='OBJECT')
+        DF_ESQUELETO = bpy.context.active_object
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        #selecionamos el esqueleto base 
+        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+        bpy.context.view_layer.objects.active = DF_SELECTION
+        DF_SELECTION.select_set(True)
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+         
+        cambiar_color_huesos(
+                            DF_ESQUELETO,
+                            PREFIJO_HUESOS_DEFORMACION,
+                            (0.0,0.05,0.6),
+                            (0.0,1.0,1.0),
+                            (1.0,1.0,1.0))
+         
+        bpy.ops.object.mode_set(mode='POSE')
+        data_path = "control_rig.df_prop."
+        if not len(DF_SELECTION.data.bones) == 0 :
+            
+            
+            eliminar_todo_constraints(self,DF_SELECTION,PREFIJO_HUESOS_DEFORMACION)
+            eliminar_drivers_rotos_esqueleto(DF_SELECTION)
+         
+            
+            
+            for bone in DF_SELECTION.pose.bones:
+                if bone.name.startswith(PREFIJO_HUESOS_DEFORMACION):
+                    vincular_driver("",bone,data_path,armature,"mostrar")
+                    
+                    pass
+                pass
+            for bone in DF_SELECTION.data.bones:
+                if bone.name.startswith(PREFIJO_HUESOS_DEFORMACION):
+                    vincular_driver("",bone,data_path,armature,"activar_selecion","hide_select")
+                pass
+            bpy.ops.object.mode_set(mode='OBJECT')
+        else:
+            bpy.ops.object.mode_set(mode='OBJECT')
+            self.report({"INFO"},"esqueleto no sigue la nomenclatura requerida")
+            pass
+            
+        return {'FINISHED'}
+        pass
+    pass
+
+
 # sistema Fk: Operador encargado de duplicar la armadura base y estructurar los huesos FK
 class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
@@ -1305,7 +1376,7 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         
         box_crear = layout.box()
         box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
-        
+        box_crear.operator("object.configurar_df",icon="BONE_DATA")
         
         fila_1 = box_crear.row(align=True)
         fila_1.prop(general_prop, "combinar_FK", toggle=True)
@@ -1694,12 +1765,18 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         
-        FK = context.active_object.data.control_rig.fk_prop
-        IK = context.active_object.data.control_rig.ik_prop
+        DF  = context.active_object.data.control_rig.df_prop
+        FK  = context.active_object.data.control_rig.fk_prop
+        IK  = context.active_object.data.control_rig.ik_prop
         IPI = context.active_object.data.control_rig.ipi_prop
         
         
         box_general = layout.box()
+        
+        row1 = box_general.row()
+        row1.prop(DF,"mostrar",         toggle = True)
+        row1.prop(DF,"activar_selecion",toggle = True)
+        
         box_general.prop(FK,"mostrar",toggle=True)
         
         row = box_general.row()
@@ -1756,12 +1833,20 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
 
 # listado de clases a registrar/desregistrar en Blender
 classes = [
+    ARMATURE_GENERAL_PROPIEDADES,
+    ARMATURE_SISTEMA_DF_PROPIEDADES,
+    ARMATURE_SISTEMA_FK_PROPIEDADES,
+    ARMATURE_SISTEMA_IK_PROPIEDADES,
+    ARMATURE_SISTEMA_IPI_PROPIEDADES,
+    ARMATURE_CONTROLADOR_PROPIEDADES,
+    
     DATA_PT_UI_CREATE_ARMATURE,
     DATA_PT_UI_Control_SISTEMAS,
     DATA_PT_UI_Control_FK,
     DATA_PT_UI_Control_IK,
     DATA_PT_UI_Control_IPI,
     DATA_PT_UI_SELECIONAR_SISTEMA,
+    OBJECT_TO_configurar_desformadores,
     
     
     OBJECT_OT_Generar_sistema_FK,
@@ -1781,11 +1866,7 @@ classes = [
     OBJECT_OT_ELIMINAR_IK,
     OBJECT_OT_ELIMINAR_IPI,
     
-    ARMATURE_GENERAL_PROPIEDADES,
-    ARMATURE_SISTEMA_FK_PROPIEDADES,
-    ARMATURE_SISTEMA_IK_PROPIEDADES,
-    ARMATURE_SISTEMA_IPI_PROPIEDADES,
-    ARMATURE_CONTROLADOR_PROPIEDADES,
+    
     
 ]
 
