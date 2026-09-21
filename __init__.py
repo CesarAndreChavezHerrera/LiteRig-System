@@ -1013,7 +1013,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             
             ##############################################################
-            # brazo
+            # brazo R
             
             bpy.ops.object.mode_set(mode='EDIT')
             
@@ -1095,6 +1095,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 pass
             else:
                 self.report({"INFO"},"Hueso del brazo R no encontrado")
+                
                 
                 
                 
@@ -1404,6 +1405,29 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
         
         return {'FINISHED'}  
         
+#################################################################################
+#                            Borra sistema drivers DF
+######################################################################################
+
+class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator): 
+    """Borra la drivers del objeto"""
+    
+    bl_idname = "object.eliminar_driver_df"
+    bl_label = "Eliminar drivers deformadores" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context):
+        
+        obj = context.object
+        if obj.data and obj.data.animation_data and obj.data.animation_data.drivers:
+            for fcurve in list(obj.data.animation_data.drivers):
+                obj.data.driver_remove(fcurve.data_path, fcurve.array_index)
+        
+        return {'FINISHED'}  
+
+
+
      
 ###########################################################
 #
@@ -1437,7 +1461,8 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         
         box_crear = layout.box()
         box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
-        box_crear.operator("object.configurar_df",icon="BONE_DATA")
+        box_crear.operator("object.configurar_df"          ,icon="BONE_DATA")
+        box_crear.operator("object.eliminar_driver_df"     ,icon="TRASH")
         
         fila_1 = box_crear.row(align=True)
         fila_1.prop(general_prop, "combinar_FK", toggle=True)
@@ -1451,6 +1476,8 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         fila_3 = box_crear.row(align=True)
         fila_3.prop(general_prop, "combinar_IPI", toggle=True)
         fila_3.operator("object.generar_ipi",icon="BONE_DATA")
+        
+        
         pass
     pass
 
@@ -1921,13 +1948,6 @@ classes = [
     ARMATURE_SISTEMA_IPI_PROPIEDADES,
     ARMATURE_CONTROLADOR_PROPIEDADES,
     
-    DATA_PT_UI_CREATE_ARMATURE,
-    DATA_PT_UI_Control_SISTEMAS,
-    DATA_PT_UI_Control_FK,
-    DATA_PT_UI_Control_IK,
-    DATA_PT_UI_Control_IPI,
-    DATA_PT_UI_SELECIONAR_SISTEMA,
-    OBJECT_TO_configurar_desformadores,
     
     
     OBJECT_OT_Generar_sistema_FK,
@@ -1946,8 +1966,16 @@ classes = [
     OBJECT_OT_ELIMINAR_FK,
     OBJECT_OT_ELIMINAR_IK,
     OBJECT_OT_ELIMINAR_IPI,
+    OBJECT_OT_ELIMINAR_DRIVERS_DF,
     
     
+    DATA_PT_UI_CREATE_ARMATURE,
+    DATA_PT_UI_Control_SISTEMAS,
+    DATA_PT_UI_Control_FK,
+    DATA_PT_UI_Control_IK,
+    DATA_PT_UI_Control_IPI,
+    DATA_PT_UI_SELECIONAR_SISTEMA,
+    OBJECT_TO_configurar_desformadores,
     
 ]
 
