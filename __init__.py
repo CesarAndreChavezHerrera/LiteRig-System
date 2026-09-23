@@ -2266,6 +2266,8 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         brazo_botones_L = brazo_L.row()
         brazo_botones_L.prop(armature,"mostrar_brazo_l",toggle=True)
         brazo_botones_L.prop(armature,"influencia_brazo_l",slider=True)
+        
+        
         #mano
         mano_L = brazo_L.box()
         mano_L.label(text="MANO L")
@@ -2281,6 +2283,8 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         brazo_botones_R = brazo_R.row()
         brazo_botones_R.prop(armature,"mostrar_brazo_r",toggle=True)
         brazo_botones_R.prop(armature,"influencia_brazo_r",slider=True)
+        
+        
         #mano
         mano_R = brazo_R.box()
         mano_R.label(text="MANO R")
