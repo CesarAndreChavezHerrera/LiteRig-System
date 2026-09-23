@@ -24,7 +24,7 @@ import math
 PREFIJO_HUESOS_DEFORMACION = "DF."
 PREFIJO_HUESOS_FK          = "FK."
 PREFIJO_HUESOS_IK          = "IK."
-PREFIJO_HUESOS_API         = "IPI."
+PREFIJO_HUESOS_IPI         = "IPI."
 
 PREFIJO_HUESOS_FIJADOR     = "PIN."
 PREFIJO_HUESOS_ACCESORIOS  = "PROP."
@@ -99,6 +99,39 @@ MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA = {
     ZONA_MANO_R   : PROP_INFLUENCIA + ZONA_MANO_R   [:-1].lower(),
     ZONA_PIERNA_R : PROP_INFLUENCIA + ZONA_PIERNA_R [:-1].lower(),
     ZONA_PIE_R    : PROP_INFLUENCIA + ZONA_PIE_R    [:-1].lower()
+
+}
+
+MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
+    "IPI.Head"  : "IPI.CABEZA.cabeza",
+    "IPI.Neck"  : "IPI.CABEZA.cuello",
+    
+    "IPI.Chest"        : "IPI.ESPALDA.espalda.4",
+    "IPI.MiddleSpine"  : "IPI.ESPALDA.espalda.3",
+    "IPI.LowerSpine"   : "IPI.ESPALDA.espalda.1",
+    "IPI.Hip"          : "IPI.ESPALDA.espalda",
+    
+    "IPI.LThigh"      : "IPI.PIERNA_L.pierna.L",
+    "IPI.LShin"       : "IPI.PIERNA_L.antepierna.L",
+    "IPI.LFoot"       : "IPI.PIE_L.pie.L",
+    "IPI.LToe"       : "IPI.PIE_L.dedos.L",
+    
+    "IPI.LClavicle"  : "IPI.BRAZO_L.hombro.L",
+    "IPI.LShoulder"  : "IPI.BRAZO_L.brazo.L",
+    "IPI.LForearm"   : "IPI.BRAZO_L.antebrazo.L",
+    "IPI.LHand"      : "IPI.MANO_L.mano.L",
+    
+    "IPI.RThigh"      : "IPI.PIERNA_R.pierna.R",
+    "IPI.RShin"       : "IPI.PIERNA_R.antepierna.R",
+    "IPI.RFoot"       : "IPI.PIE_R.pie.R",
+    "IPI.RToe"        : "IPI.PIE_R.dedos.R",
+    
+    "IPI.RClavicle"  : "IPI.BRAZO_R.hombro.R",
+    "IPI.RShoulder"  : "IPI.BRAZO_R.brazo.R",
+    "IPI.RForearm"   : "IPI.BRAZO_R.antebrazo.R",
+    "IPI.RHand"      : "IPI.MANO_R.mano.R",
+    
+    
 
 }
 
@@ -1147,8 +1180,9 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 hueso_ik.tail = hueso_objetivo.tail + mover_hueso # mueve la cola del hueso
                 
                 # configuracion del hueso 
-                hueso_ik.use_connect  = False
-                hueso_ik.use_deform   = False
+                hueso_ik.use_connect          = False
+                hueso_ik.use_deform           = False
+                hueso_ik.use_inherit_rotation = False
                 hueso_ik.parent       = hueso_padre
                 #control_cabeza.display_type = "BBONE"
                 
@@ -1746,7 +1780,156 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
-        self.report({'INFO'}, "HOLA MUNDO") 
+        armature  = context.object.data
+        fk        = armature.control_rig
+        combinar  = fk.crear_prop.combinar_IPI 
+        
+        
+         
+        bpy.ops.object.mode_set(mode='OBJECT')
+        DF_ESQUELETO = bpy.context.active_object
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        #selecionamos el esqueleto base 
+        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+        bpy.context.view_layer.objects.active = DF_SELECTION
+        DF_SELECTION.select_set(True)
+        
+        bpy.ops.object.duplicate(linked=False)
+        
+        IPI_esqueleto = bpy.context.active_object
+        #FK_esqueleto.location.x += 1
+        IPI_esqueleto.name = "IPI"
+        
+                
+        if IPI_esqueleto.data and IPI_esqueleto.data.animation_data and IPI_esqueleto.data.animation_data.drivers:
+            for fcurve in list(IPI_esqueleto.data.animation_data.drivers):
+                IPI_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
+                
+                
+                
+        bpy.ops.object.mode_set(mode='EDIT')
+        
+        # borra todo los huesos que no sean deformacion                     
+        borrar_huesos_prefijo(IPI_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
+
+        renombrar_prefijo_huesos(IPI_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_IPI)
+                                
+        cambiar_color_huesos(IPI_esqueleto,PREFIJO_HUESOS_IPI,
+                            (0,0.8,0.8),   # celeste
+                            (1.0,0.0,0.0), # rojo
+                            (1.0,1.0,0.0)  # amarillo
+                            )
+        
+        #limpieza 
+        bpy.ops.object.mode_set(mode='POSE')
+        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_FK)
+        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_IK)
+        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_IPI)
+        
+        eliminar_drivers_rotos_esqueleto(IPI_esqueleto)
+        
+        for bone in IPI_esqueleto.data.bones:
+           if bone.name.startswith( PREFIJO_HUESOS_FK):
+               bone.hide_select = False
+               pass
+        
+        borrar_ik = False
+        
+        if not len(IPI_esqueleto.data.bones) == 0 :
+            data_path = "control_rig.ipi_prop."
+            
+            for bone in IPI_esqueleto.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                    
+                    if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
+                        bone.rotation_mode = 'XYZ'
+                        vincular_driver(propiedad,bone,data_path,armature)
+                        
+                        
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            bpy.ops.object.mode_set(mode='POSE')
+            
+            for bone in DF_ESQUELETO.pose.bones:
+                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA.items():
+                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
+                    
+                    if bone.name.startswith(df_prefijo):
+                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
+                        constraint_hueso.name = "IPI_ROTATION"
+                        constraint_hueso.target = IPI_esqueleto
+                        constraint_hueso.subtarget = PREFIJO_HUESOS_IPI + bone.name[3:]
+                        constraint_hueso.target_space = "LOCAL"
+                        constraint_hueso.owner_space = "LOCAL"
+                        constraint_hueso.mix_mode = "ADD" 
+                        
+                        
+                        vincular_driver(propiedad,
+                                            constraint_hueso,
+                                            data_path,armature,
+                                            "influencia_maestra",
+                                            "influence","")
+                        
+                        pass
+                    pass
+
+                pass
+            context.object.update_tag(refresh={'DATA'})
+            ############################################################
+            #                     ACTUALIZAR nombre
+            
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = IPI_esqueleto
+            bpy.ops.object.mode_set(mode='EDIT')
+            
+            for bone in IPI_esqueleto.data.edit_bones:
+                self.report({"INFO"},f"{bone.name}")
+                for nuevo_nombre , nombre_to_comprobar in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+                
+                    if bone.name == nombre_to_comprobar:
+                        bone.name = nuevo_nombre
+                  
+            
+        else:
+            # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
+
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.context.view_layer.objects.active = IPI_esqueleto
+            FK_esqueleto.select_set(True)
+            bpy.ops.object.delete(use_global=False)
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
+            borrar_ik = True
+        
+        
+        if combinar:
+            if not borrar_ik:
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+                fk_join = bpy.data.objects.get(IPI_esqueleto.name)
+                df_join = bpy.data.objects.get(DF_ESQUELETO.name)
+                
+                df_join.select_set(True)
+                fk_join.select_set(True)
+                
+                bpy.context.view_layer.objects.active = df_join
+                bpy.ops.object.join()
+            else:
+                self.report({"INFO"},"Sistema IK No creado")
+        
+        else:
+            
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.select_all(action='DESELECT')
+            bpy.context.view_layer.objects.active = DF_ESQUELETO
+            DF_ESQUELETO.select_set(True)
+            
+            self.report({"INFO"},"Se combino el esqueleto IPI con el esqueleto DF")
+            pass
         return {'FINISHED'}  
 
 
@@ -1970,7 +2153,7 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
         esqueleto = obj
-        borrar_huesos_prefijo(esqueleto,PREFIJO_HUESOS_API)
+        borrar_huesos_prefijo(esqueleto,PREFIJO_HUESOS_IPI)
       
         #borrado de constraints         
         bpy.ops.object.mode_set(mode='POSE') 
@@ -2228,6 +2411,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         cabeza_botones.prop(armature,"mostrar_cabeza",toggle=True)
         cabeza_botones.prop(armature,"influencia_cabeza",slider=True)
         
+        """
         cejas = cabeza.box()
         cejas.label(text ="CEJAS")
         cejas_botones = cejas.row()
@@ -2245,7 +2429,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         boca_botones = boca.row()
         boca_botones.prop(armature,"mostrar_boca", toggle=True)
         boca_botones.prop(armature,"influencia_boca", toggle=True)
-
+        """
         
         layout.separator()
         
@@ -2267,7 +2451,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         brazo_botones_L.prop(armature,"mostrar_brazo_l",toggle=True)
         brazo_botones_L.prop(armature,"influencia_brazo_l",slider=True)
         
-        
+        """
         #mano
         mano_L = brazo_L.box()
         mano_L.label(text="MANO L")
@@ -2275,7 +2459,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         mano_botones_L.prop(armature,"mostrar_mano_l",toggle=True)
         mano_botones_L.prop(armature,"influencia_mano_l",slider=True)
         layout.separator()
-        
+        """
         
         # brazo R
         brazo_R = layout.box()
@@ -2284,7 +2468,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         brazo_botones_R.prop(armature,"mostrar_brazo_r",toggle=True)
         brazo_botones_R.prop(armature,"influencia_brazo_r",slider=True)
         
-        
+        """
         #mano
         mano_R = brazo_R.box()
         mano_R.label(text="MANO R")
@@ -2292,7 +2476,7 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
         mano_botones_R.prop(armature,"mostrar_mano_r",toggle=True)
         mano_botones_R.prop(armature,"influencia_mano_r",slider=True)
         layout.separator()
-        
+        """
         
         # pierna L
         pierna_L = layout.box()
