@@ -6,7 +6,7 @@
 
 # Información del Add-on registrada en Blender (metadatos principales)
 bl_info = {
-    "name": "INDI RIGGING SYSTEM",
+    "name": "LiteRig SYSTEM",
     "author": "cesar andre chavez herrera",
     "version": (1, 0, 0),
     "blender": (5, 0, 0),
