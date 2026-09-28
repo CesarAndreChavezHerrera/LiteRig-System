@@ -19,6 +19,7 @@ bl_info = {
 import bpy
 from mathutils import Vector
 import math
+
 # LISTA DE PREFIJOS 
 
 PREFIJO_HUESOS_DEFORMACION = "DF."
@@ -57,6 +58,93 @@ ZONA_PIE_R    = "PIE_R."
 PROP_MOSTRAR    = "mostrar_"
 PROP_INFLUENCIA = "influencia_"
 
+
+# listado de huesos
+
+HUESO_CABEZA = "cabeza"
+HUESO_CUELLO = "cuello"
+
+HUESO_PECHO          = "espalda"
+HUESO_PELVIS_CENTRAL = "espalda"
+HUESO_ESPALDA        = "espalda"
+
+HUESO_HOMBRO        = "hombro"
+HUESO_BRAZO         = "brazo"
+HUESO_ANTEBRAZO     = "antebrazo"
+
+HUESO_MANO          ="mano"
+HUESO_PRE_DEDO      ="mano"
+HUESO_DEDO_INDICE   ="indice"
+HUESO_DEDO_ANULAR   ="anular"
+HUESO_DEDO_MEDIO    ="medio"
+HUESO_DEDO_MENNIQUE ="meñique"
+HUESO_DEDO_PULGAR   ="pulgar"
+
+HUESO_PELVIS        ="pelvis"
+HUESO_PIERNA        ="pierna"
+HUESO_ANTEPIERNA    ="antepierna"
+HUESO_PIE           ="pie"
+HUESO_DEDO_PIE      ="dedos"
+
+
+
+# mapeo de nombre de huesos segun sus sonas
+
+MAPEO_NOMENCLATURA_DF_CENTRAL = {
+
+    HUESO_CABEZA : ZONA_CABEZA,
+    HUESO_CUELLO : ZONA_CABEZA,
+    
+    HUESO_PECHO          : ZONA_ESPALDA,
+    HUESO_PELVIS_CENTRAL : ZONA_ESPALDA,
+    HUESO_ESPALDA        : ZONA_ESPALDA,
+    }
+
+
+MAPEO_NOMENCLATURA_DF_L ={
+        
+    HUESO_HOMBRO    : ZONA_BRAZO_L,
+    HUESO_BRAZO     : ZONA_BRAZO_L,
+    HUESO_ANTEBRAZO : ZONA_BRAZO_L,
+    
+    HUESO_MANO          : ZONA_MANO_L,
+    HUESO_PRE_DEDO      : ZONA_MANO_L,
+    HUESO_DEDO_INDICE   : ZONA_MANO_L,
+    HUESO_DEDO_ANULAR   : ZONA_MANO_L,
+    HUESO_DEDO_MEDIO    : ZONA_MANO_L,
+    HUESO_DEDO_MENNIQUE : ZONA_MANO_L,
+    HUESO_DEDO_PULGAR   : ZONA_MANO_L,
+
+    HUESO_PELVIS     : ZONA_PIERNA_L,
+    HUESO_PIERNA     : ZONA_PIERNA_L,
+    HUESO_ANTEPIERNA : ZONA_PIERNA_L,
+      
+    HUESO_PIE        : ZONA_PIE_L,  
+    HUESO_DEDO_PIE   : ZONA_PIE_L
+
+}
+MAPEO_NOMENCLATURA_DF_R ={
+        
+    HUESO_HOMBRO    : ZONA_BRAZO_R,
+    HUESO_BRAZO     : ZONA_BRAZO_R,
+    HUESO_ANTEBRAZO : ZONA_BRAZO_R,
+    
+    HUESO_MANO          : ZONA_MANO_R,
+    HUESO_PRE_DEDO      : ZONA_MANO_R,
+    HUESO_DEDO_INDICE   : ZONA_MANO_R,
+    HUESO_DEDO_ANULAR   : ZONA_MANO_R,
+    HUESO_DEDO_MEDIO    : ZONA_MANO_R,
+    HUESO_DEDO_MENNIQUE : ZONA_MANO_R,
+    HUESO_DEDO_PULGAR   : ZONA_MANO_L,
+
+    HUESO_PELVIS     : ZONA_PIERNA_R,
+    HUESO_PIERNA     : ZONA_PIERNA_R,
+    HUESO_ANTEPIERNA : ZONA_PIERNA_R,
+      
+    HUESO_PIE        : ZONA_PIE_R,  
+    HUESO_DEDO_PIE   : ZONA_PIE_R
+
+}
 # LISTADO DE MAPEO DE NOMBRE DE HUESOS SIN PREFIJO CON LAS PROPIEDADES
 
 MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR = {
@@ -709,7 +797,7 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
     """Vincula los botones de mostrar y Selecionar del esqueleto base """
     
     bl_idname = "object.configurar_df" 
-    bl_label = "Configurar_df" 
+    bl_label = "Configurar df" 
     bl_options = {'REGISTER', 'UNDO'} 
     
     def execute(self, context):
@@ -725,7 +813,31 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
         DF_SELECTION.select_set(True)
         
         bpy.ops.object.mode_set(mode='EDIT')
-         
+        # estritura de nombre de los huesos siguiendo la nomenclatura
+        
+        for bone in DF_SELECTION.data.edit_bones:
+            nombre_hueso = bone.name
+            
+            for nombre, zona in  MAPEO_NOMENCLATURA_DF_CENTRAL.items():
+                if nombre_hueso.startswith(nombre):
+                    bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
+                    break
+                pass
+            for nombre, zona in  MAPEO_NOMENCLATURA_DF_L.items():
+                if nombre_hueso.startswith(nombre) and nombre_hueso.endswith(".L"):
+                    bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
+                    break
+                pass
+            for nombre, zona in  MAPEO_NOMENCLATURA_DF_R.items():
+                if nombre_hueso.startswith(nombre) and nombre_hueso.endswith(".R"):
+                    bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
+                    break
+                pass
+            
+        
+        
+        
+        # ya configurado con DF y zonas  
         cambiar_color_huesos(
                             DF_ESQUELETO,
                             PREFIJO_HUESOS_DEFORMACION,
@@ -2241,10 +2353,14 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
         for bone in obj.data.edit_bones:
             bone.color.palette= "DEFAULT"
             nombre = bone.name
-            nombre = nombre.split('.',2)
-            if len(nombre) >2:
-                nombre = nombre[2]
-                bone = nombre
+            
+            # correcion de nombre a borrar debe comenzar con df si o si para evitar falsos positivos
+            
+            if nombre.startswith("DF."):
+                nombre = nombre.split('.',2)
+                if len(nombre) >2:
+                    nombre = nombre[2]
+                    bone.name = nombre
         bpy.ops.object.mode_set(mode='OBJECT')            
         return {'FINISHED'}  
 
