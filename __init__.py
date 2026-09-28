@@ -2234,11 +2234,17 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
                 drivers_data.remove(fcurve)
             for fcurve in list(drivers_obj):
                 drivers_obj.remove(fcurve)
-                
-                
+        else:
+            self.report({"INFO"},"No se encontro ningun driver")        
+              
         bpy.ops.object.mode_set(mode='EDIT')        
         for bone in obj.data.edit_bones:
             bone.color.palette= "DEFAULT"
+            nombre = bone.name
+            nombre = nombre.split('.',2)
+            if len(nombre) >2:
+                nombre = nombre[2]
+                bone = nombre
         bpy.ops.object.mode_set(mode='OBJECT')            
         return {'FINISHED'}  
 
