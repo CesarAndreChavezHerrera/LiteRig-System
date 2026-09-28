@@ -2657,6 +2657,14 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         row.prop(IK,"mostrar_controles",toggle=True)
         box_general.prop(IPI,"mostrar",toggle=True) 
                
+               
+        influencia = layout.box()
+        influencia.label(text = "Control maestro influencia")
+        influencia.prop(FK,"influencia_maestra")
+        influencia.prop(IK,"influencia_maestra")
+        influencia.prop(IPI,"influencia_maestra")
+        
+        
 
 
 ######################################################################
