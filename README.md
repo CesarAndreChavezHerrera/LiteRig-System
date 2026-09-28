@@ -1,8 +1,8 @@
 # LiteRig System
 
-Este add-on para Blender est? dise?ado para la creaci?n de rigging personalizado en modelos de cuerpo **Low Poly y Medium Poly**. Genera un sistema de controles FK e IK simple, adem?s de incluir una base de controles faciales pensada principalmente para trabajar con **shape keys.**
+Este add-on para Blender esté diseñado para la creación de rigging personalizado en modelos de cuerpo **Low Poly y Medium Poly**. Genera un sistema de controles FK e IK simple, además de incluir una base de controles faciales pensada principalmente para trabajar con **shape keys.**
 
-Asimismo, se est? trabajando en la integraci?n de sistemas de control para animaciones provenientes de captura de movimiento **(mocap)**.
+Asimismo, se esté trabajando en la integración de sistemas de control para animaciones provenientes de captura de movimiento **(mocap)**.
 
 
 ## Compatibilidad con sistemas de captura de movimiento
@@ -33,15 +33,15 @@ Siempre se comenzara escribiendo el prefijo que define que tipo de hueso es el q
 
 | Prefijo | Descripci?n / Uso |
 | :--- | :--- |
-| `PIN.`        | Huesos de fijaci?n o anclaje (*Pins*) |
-| `PROP.`       | Huesos para utiler?a y accesorios (*Props*) |
+| `PIN.`        | Huesos de fijación o anclaje (*Pins*) |
+| `PROP.`       | Huesos para utilería y accesorios (*Props*) |
 | `HAIR.`       | Huesos para el cabello |
 | `ROPA.`       | Huesos para vestimenta y telas |
 | `DF.`         | Huesos que deforman la malla |
 | `FK.`         | Controles de **Forward Kinematics** |
 | `IK.`         | Controles y estructuras de **Inverse Kinematics** |
 | `IK.CONTROL.` | Controles principales para el sistema IK |
-| `IPI.`        | Huesos/Objetivos para integraci?n con iPi MoCap |
+| `IPI.`        | Huesos/Objetivos para integración con iPi MoCap |
 
 
 
@@ -55,10 +55,10 @@ Siempre se comenzara escribiendo el prefijo que define que tipo de hueso es el q
 | | `BOCA.` | Controles y huesos de la boca/labios; subordinados al control de la cabeza o mand?bula. |
 | **Torso** | `ESPALDA.` | Columna y torso; bajo el control del torso/cadera (*Root/Spine*). |
 | **Extremidades Izquierdas** | `BRAZO_L.` | Brazo izquierdo; subordinado a los controles de hombro y brazo. |
-| | `MANO_L.` | Mano y dedos izquierdos; subordinados al control de mu?eca/mano. |
+| | `MANO_L.` | Mano y dedos izquierdos; subordinados al control de muñeca/mano. |
 | | `PIERNA_L.` | Pierna izquierda; subordinada a los controles de cadera y pierna. |
 | | `PIE_L.` | Pie izquierdo; subordinado al control de tobillo/pie. |
 | **Extremidades Derechas** | `BRAZO_R.` | Brazo derecho; subordinado a los controles de hombro y brazo. |
-| | `MANO_R.` | Mano y dedos derechos; subordinados al control de mu?eca/mano. |
+| | `MANO_R.` | Mano y dedos derechos; subordinados al control de muñeca/mano. |
 | | `PIERNA_R.` | Pierna derecha; subordinada a los controles de cadera y pierna. |
 | | `PIE_R.` | Pie derecho; subordinado al control de tobillo/pie. |
