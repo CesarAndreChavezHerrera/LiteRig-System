@@ -8,7 +8,7 @@
 bl_info = {
     "name": "LiteRig SYSTEM",
     "author": "cesar andre chavez herrera",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (5, 0, 0),
     "location": "Properties > Data (Armature)",
     "description": "Creacion de un rigging simple para animaciones low poly con soporte para captura de movimiento con ipi mocap.",
@@ -31,6 +31,7 @@ PREFIJO_HUESOS_ACCESORIOS  = "PROP."
 PREFIJO_HUESOS_CABELLO     = "HAIR."
 PREFIJO_HUESOS_ROPA        = "ROPA."
 
+PREFIJO_HUESO_CONTROL      = "CONTROL."
 PREFIJO_HUESO_IK_CONTROL   = "IK.CONTROL." 
 # NOMECLATURA DE HUESOS 
 
@@ -682,7 +683,15 @@ def cambiar_color_huesos(
                                
     pass
 
+def buscar_hueso_especifico_edit(esqueleto,nombre = ""):
+    
+    
+    pass
 
+def buscar_hueso_especifico_pose(esqueleto,nombre = ""):
+    hueso = esqueleto.pose.bones.get(nombre)
+    return hueso
+    pass
 
 
 ################################################################################
@@ -744,6 +753,29 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
                 if bone.name.startswith(PREFIJO_HUESOS_DEFORMACION):
                     vincular_driver("",bone,data_path,armature,"activar_selecion","hide_select")
                 pass
+            
+            # hueso de control de sistema 
+            bpy.ops.object.mode_set(mode='POSE')
+            
+            # Que debe hacer?
+            # 1- busca el hueso de control del sistema
+            # 2- vincular la propiedad de local del hueso a respectiva propiedad de influencia
+            # 3- añadir un limite de "y" 0 y 1 bloqueando todas la demas
+            control_sistema_nombre = PREFIJO_HUESO_CONTROL+PREFIJO_HUESOS_FK[:-1] 
+            control_sistema = buscar_hueso_especifico_pose(DF_SELECTION,control_sistema_nombre)
+            
+            if not control_sistema == None:
+                #data_path = "control_rig.fk_prop.influencia_maestra"
+                #driver = DF_SELECTION.driver_add(data_path).driver
+                #driver.type = "SCRIPTED"
+                
+                self.report({"INFO"},"hueso encontrado")
+                
+                pass
+            else:
+                self.report({"INFO"},"hueso NO encontrado")
+                
+            
             bpy.ops.object.mode_set(mode='OBJECT')
         else:
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -2185,10 +2217,29 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
     def execute(self, context):
         
         obj = context.object
-        if obj.data and obj.data.animation_data and obj.data.animation_data.drivers:
-            for fcurve in list(obj.data.animation_data.drivers):
-                obj.data.driver_remove(fcurve.data_path, fcurve.array_index)
         
+        
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+        for bone in obj.data.bones:
+            bone.hide_select = False
+            bone.hide_select = False
+            
+        if obj.animation_data and obj.animation_data.drivers:
+            
+            drivers_data = obj.data.animation_data.drivers
+            drivers_obj = obj.animation_data.drivers
+            
+            for fcurve in list(drivers_data):
+                drivers_data.remove(fcurve)
+            for fcurve in list(drivers_obj):
+                drivers_obj.remove(fcurve)
+                
+                
+        bpy.ops.object.mode_set(mode='EDIT')        
+        for bone in obj.data.edit_bones:
+            bone.color.palette= "DEFAULT"
+        bpy.ops.object.mode_set(mode='OBJECT')            
         return {'FINISHED'}  
 
 
