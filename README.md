@@ -26,7 +26,7 @@ Asimismo, se esté trabajando en la integración de sistemas de control para ani
 Los nombre de los huesos siempre estaran en minuscula, y usar la herramienta de **auto name left and right** para definir izquierda y derecha.
 
 | huesos                     | bones area         | nombre del hueso|
-| :---                       |                    | :---            |
+| :---                       | :---               | :---            |
 | --- Cabeza ---             | --- Head ---       | --- Cabeza ---  |
 | hueso de la cabeza         |                    |   cabeza        |
 | hueso de la cabeza         |                    |   cuello        |
