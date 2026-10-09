@@ -23,6 +23,7 @@ import math
 version_blender = bpy.app.version
 blender_4 = (4,0,0)
 blender_5 = (5,0,0)
+blender_3 = (3,6,0)
 # LISTA DE PREFIJOS 
 
 PREFIJO_HUESOS_DEFORMACION = "DF."
@@ -768,14 +769,16 @@ def cambiar_color_huesos(
                         color_select,
                         color_activo,
                         ):
-    bpy.ops.armature.select_all(action='DESELECT')
-     
-    for bone in esqueleto.data.edit_bones:
-        if bone.name.startswith(prefijo):
-                bone.color.palette = "CUSTOM"
-                bone.color.custom.normal = color_normal
-                bone.color.custom.select = color_select
-                bone.color.custom.active = color_activo
+                            
+    if version_blender >= blender_4:
+        bpy.ops.armature.select_all(action='DESELECT')
+         
+        for bone in esqueleto.data.edit_bones:
+            if bone.name.startswith(prefijo):
+                    bone.color.palette = "CUSTOM"
+                    bone.color.custom.normal = color_normal
+                    bone.color.custom.select = color_select
+                    bone.color.custom.active = color_activo
                                
     pass
 
@@ -887,6 +890,15 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
                 
                 
                 pass
+            elif version_blender >= blender_3:
+                self.report({"INFO"},f"{version_blender}")
+                
+                for bone in DF_SELECTION.data.bones:
+                    if bone.name.startswith(PREFIJO_HUESOS_DEFORMACION):
+                        vincular_driver("",bone,data_path,armature,"mostrar")
+                        vincular_driver("",bone,data_path,armature,"activar_selecion","hide_select")
+                    pass
+                
             
             # hueso de control de sistema 
             bpy.ops.object.mode_set(mode='POSE')
@@ -996,7 +1008,8 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                         if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
                             vincular_driver(propiedad,bone,data_path,armature)
                             pass
-            elif version_blender >= blender_4:
+                        
+            elif version_blender >= blender_3 :
                 for bone in FK_esqueleto.data.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
                         if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
@@ -1146,7 +1159,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                         if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
                             vincular_driver(propiedad,bone,data_path,armature)
             
-            elif version_blender >= blender_4:   
+            elif version_blender >= blender_3:   
                 
                 for bone in IK_esqueleto.data.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
@@ -1258,7 +1271,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     control_cabeza_pose = IK_esqueleto.pose.bones.get(nombre_hueso)
                     cabeza_pose         = IK_esqueleto.pose.bones.get(hueso_cabeza_name)
                     
-                elif version_blender >= blender_4:
+                elif version_blender >= blender_3:
                     control_cabeza_pose = IK_esqueleto.data.bones.get(nombre_hueso)
                     cabeza_pose         = IK_esqueleto.data.bones.get(hueso_cabeza_name)
                     
@@ -1331,7 +1344,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
                     hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
-                elif version_blender >= blender_4:
+                elif version_blender >= blender_3:
                     hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
                     hueso_objetivo      = IK_esqueleto.data.bones.get(hueso_objetivo_name)
 
@@ -1406,7 +1419,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
                     hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
-                elif version_blender >= blender_4:
+                    
+                elif version_blender >= blender_3:
                     hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
                     hueso_objetivo      = IK_esqueleto.data.bones.get(hueso_objetivo_name)
 
@@ -1500,7 +1514,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     if version_blender >= blender_5:
                         pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
-                    elif version_blender >= blender_4:
+                        
+                    elif version_blender >= blender_3:
                         pole_pose           = IK_esqueleto.data.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
                         
@@ -1600,7 +1615,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     if version_blender >= blender_5:
                         pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
-                    elif version_blender >= blender_4:
+                        
+                    elif version_blender >= blender_3:
                         pole_pose           = IK_esqueleto.data.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
                         
@@ -1699,7 +1715,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     if version_blender >= blender_5:
                         pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
-                    elif version_blender >= blender_4:
+                        
+                    elif version_blender >= blender_3:
                         pole_hueso          = IK_esqueleto.data.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
                         
@@ -1779,7 +1796,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 # conecta el control con el boton mostrar 
                 if version_blender >= blender_5:
                     hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                elif version_blender >= blender_4:
+                    
+                elif version_blender >= blender_3:
                     hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
                 
                 vincular_driver(
@@ -1871,7 +1889,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     if version_blender >= blender_5:
                         pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
-                    elif version_blender >= blender_4:
+                        
+                    elif version_blender >= blender_3:
                         pole_hueso          = IK_esqueleto.data.bones.get(nombre_pole)
                         IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
                         
@@ -1947,7 +1966,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 # conecta el control con el boton mostrar 
                 if version_blender >= blender_5:
                     hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                elif version_blender >= blender_4:
+                    
+                elif version_blender >= blender_3:
                     hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
                 
                 vincular_driver(
@@ -2114,8 +2134,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
                             bone.rotation_mode = 'XYZ'
                             vincular_driver(propiedad,bone,data_path,armature)
             
-            
-            elif version_blender >= blender_4:
+            elif version_blender >= blender_3:
                 
                 for bone in IPI_esqueleto.data.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
@@ -2510,7 +2529,8 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
               
         bpy.ops.object.mode_set(mode='EDIT')        
         for bone in obj.data.edit_bones:
-            bone.color.palette= "DEFAULT"
+            if version_blender >= blender_4:
+                bone.color.palette= "DEFAULT"
             nombre = bone.name
             
             # correcion de nombre a borrar debe comenzar con df si o si para evitar falsos positivos
