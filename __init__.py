@@ -706,6 +706,9 @@ def eliminar_drivers_rotos_esqueleto(
             if eliminar:
                 anim_data.drivers.remove(fcurve)
                    #self.report({"INFO"},f"driver eliminado del hueso {bone}")
+            
+
+                
     
     bpy.context.view_layer.update()
     pass
@@ -2467,7 +2470,8 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
         for bone in obj.data.bones:
             bone.hide_select = False
             bone.hide_select = False
-            
+        
+        # mejora   
         if obj.animation_data and obj.animation_data.drivers:
             
             drivers_data = obj.data.animation_data.drivers
@@ -2477,6 +2481,30 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
                 drivers_data.remove(fcurve)
             for fcurve in list(drivers_obj):
                 drivers_obj.remove(fcurve)
+        
+        #borra TODOS los drivers
+        if obj.animation_data and obj.animation_data.drivers:
+            for fcurve in obj.animation_data.drivers:
+                fcurve.select = True  # True para seleccionar, False para deseleccionar
+
+        # Seleccionar todas las F-Curves del Data-Block
+        if obj.data.animation_data and obj.data.animation_data.drivers:
+            for fcurve in obj.data.animation_data.drivers:
+                fcurve.select = True        
+        # 1. En el objeto (PoseBones)
+        if obj.animation_data and obj.animation_data.drivers:
+            drivers = obj.animation_data.drivers
+            for fcurve in list(drivers):
+                if fcurve.select:
+                    drivers.remove(fcurve)
+
+        # 2. En la armadura (Data-Block)
+        if obj.data.animation_data and obj.data.animation_data.drivers:
+            drivers_data = obj.data.animation_data.drivers
+            for fcurve in list(drivers_data):
+                if fcurve.select:
+                    drivers_data.remove(fcurve)
+    
         else:
             self.report({"INFO"},"No se encontro ningun driver")        
               
