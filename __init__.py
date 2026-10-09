@@ -2042,7 +2042,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
 
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.context.view_layer.objects.active = IPI_esqueleto
-            FK_esqueleto.select_set(True)
+            IPI_esqueleto.select_set(True)
             bpy.ops.object.delete(use_global=False)
             bpy.ops.object.select_all(action='DESELECT')
             bpy.context.view_layer.objects.active = DF_ESQUELETO
