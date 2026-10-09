@@ -1417,8 +1417,9 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 "hide","not")
                 
                 # añade un contraitns
-                hueso_ik_.pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)                
+                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                               
                 constraint_hueso = hueso_objetivo.constraints.new(type = "COPY_ROTATION")
                 constraint_hueso.name       = "mover hombros "
                 constraint_hueso.target     = IK_esqueleto
@@ -2101,13 +2102,25 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         if not len(IPI_esqueleto.data.bones) == 0 :
             data_path = "control_rig.ipi_prop."
             
-            for bone in IPI_esqueleto.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                    
-                    if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
-                        bone.rotation_mode = 'XYZ'
-                        vincular_driver(propiedad,bone,data_path,armature)
+            
+            if version_blender >= blender_5:
+                for bone in IPI_esqueleto.pose.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
                         
+                        if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
+                            bone.rotation_mode = 'XYZ'
+                            vincular_driver(propiedad,bone,data_path,armature)
+            
+            
+            elif version_blender >= blender_4:
+                
+                for bone in IPI_esqueleto.data.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                        if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+                for bone in IPI_esqueleto.pose.bones:
+                    bone.rotation_mode = 'XYZ'
+                    pass      
                         
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.ops.object.select_all(action='DESELECT')
@@ -2148,7 +2161,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='EDIT')
             
             for bone in IPI_esqueleto.data.edit_bones:
-                self.report({"INFO"},f"{bone.name}")
+                #self.report({"INFO"},f"{bone.name}")
                 for nuevo_nombre , nombre_to_comprobar in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
                 
                     if bone.name == nombre_to_comprobar:
