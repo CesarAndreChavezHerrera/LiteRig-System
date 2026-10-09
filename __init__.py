@@ -20,6 +20,9 @@ import bpy
 from mathutils import Vector
 import math
 
+version_blender = bpy.app.version
+version_4 = (4,0,0)
+version_5 = (5,0,0)
 # LISTA DE PREFIJOS 
 
 PREFIJO_HUESOS_DEFORMACION = "DF."
@@ -604,17 +607,37 @@ def vincular_driver(
                 ajuste_expresion = "not"    
                     ):
     
-    driver = bone.driver_add(contectar_prop).driver
-    driver.type = "SCRIPTED"
-    
-    if prop_nombre != "":
-        crear_var_driver(driver,prop_maestra,data_path,armature) # crea la variable maestra
-        crear_var_driver(driver,prop_nombre,data_path,armature)    # crea la variable especifica
+    if version_blender >= version_5:
         
-        driver.expression = ajuste_expresion+f"({prop_maestra}*{prop_nombre})"
-    else:
-        crear_var_driver(driver,prop_maestra,data_path,armature) 
-        driver.expression = ajuste_expresion+f"({prop_maestra})"               
+        driver = bone.driver_add(contectar_prop).driver
+        driver.type = "SCRIPTED"
+        
+        if prop_nombre != "":
+            crear_var_driver(driver,prop_maestra,data_path,armature) # crea la variable maestra
+            crear_var_driver(driver,prop_nombre,data_path,armature)    # crea la variable especifica
+            
+            driver.expression = ajuste_expresion+f"({prop_maestra}*{prop_nombre})"
+        else:
+            crear_var_driver(driver,prop_maestra,data_path,armature) 
+            driver.expression = ajuste_expresion+f"({prop_maestra})" 
+            
+    if version_blender >= version_4 and version_blender < version_5:
+        driver_fcurve = pose_bone.driver_add(contectar_prop)
+        driver = driver_fcurve.driver
+        driver.type = 'SCRIPTED'
+        
+        # Clean previous variables if replacing/rebuilding driver
+        driver.variables.clear()
+
+        # 2. Configurar variables y expresión
+        if prop_nombre != "":
+            crear_var_driver(driver, prop_maestra, data_path, armature_obj)
+            crear_var_driver(driver, prop_nombre, data_path, armature_obj)
+            driver.expression = f"{ajuste_expresion}({prop_maestra} * {prop_nombre})"
+        else:
+            crear_var_driver(driver, prop_maestra, data_path, armature_obj)
+            driver.expression = f"{ajuste_expresion}({prop_maestra})"
+            pass         
     pass
 
 
@@ -801,6 +824,8 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
     
     def execute(self, context):
+        
+        self.report({"INFO"},f"{version_blender}")
         armature  = context.object.data
         
         bpy.ops.object.mode_set(mode='OBJECT')
