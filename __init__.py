@@ -1135,12 +1135,22 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         if not len(IK_esqueleto.data.bones) == 0 :
             data_path = "control_rig.ik_prop."
             
-            for bone in IK_esqueleto.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                    
-                    if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
-                        vincular_driver(propiedad,bone,data_path,armature)
+            if version_blender >=blender_5:
                 
+                for bone in IK_esqueleto.pose.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                        
+                        if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+            
+            elif version_blender >= blender_4:   
+                
+                for bone in IK_esqueleto.data.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
+                        
+                        if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+            
                 pass
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.ops.object.select_all(action='DESELECT')
@@ -1236,10 +1246,19 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 nombre_hueso = control_cabeza.name
                 bpy.ops.object.mode_set(mode='POSE')
                 
-                # se obtiene los hueso de control y el uso que lo aplicara 
-                control_cabeza_pose = IK_esqueleto.pose.bones.get(nombre_hueso)
-                cabeza_pose         = IK_esqueleto.pose.bones.get(hueso_cabeza_name)
                 
+                control_cabeza_pose = None
+                cabeza_pose         = None
+                
+                if version_blender >= blender_5:
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    control_cabeza_pose = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    cabeza_pose         = IK_esqueleto.pose.bones.get(hueso_cabeza_name)
+                    
+                elif version_blender >= blender_4:
+                    control_cabeza_pose = IK_esqueleto.data.bones.get(nombre_hueso)
+                    cabeza_pose         = IK_esqueleto.data.bones.get(hueso_cabeza_name)
+                    
                 # conecta el control con el boton mostrar 
                 vincular_driver(
                                 "",
@@ -1249,7 +1268,11 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 "mostrar_controles",
                                 "hide","not")
                 
-                # añade un contraitns                
+                # añade un contraitns
+                control_cabeza_pose = IK_esqueleto.pose.bones.get(nombre_hueso)
+                cabeza_pose         = IK_esqueleto.pose.bones.get(hueso_cabeza_name)
+
+         
                 constraint_hueso = cabeza_pose.constraints.new(type = "TRACK_TO")
                 constraint_hueso.name       = "control cabeza"
                 constraint_hueso.target     = IK_esqueleto
@@ -1298,10 +1321,18 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 nombre_hueso_ik = hueso_ik.name
                 bpy.ops.object.mode_set(mode='POSE')
                 
-                # se obtiene los hueso de control y el uso que lo aplicara 
-                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                hueso_ik_pose      = None
+                hueso_objetivo     = None 
                 
+                if version_blender >= blender_5:
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                    hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                elif version_blender >= blender_4:
+                    hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
+                    hueso_objetivo      = IK_esqueleto.data.bones.get(hueso_objetivo_name)
+
+                        
                 # conecta el control con el boton mostrar 
                 vincular_driver(
                                 "",
@@ -1312,6 +1343,9 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 "hide","not")
                 
                 # añade un contraitns                
+                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                    
                 constraint_hueso = hueso_objetivo.constraints.new(type = "COPY_TRANSFORMS")
                 constraint_hueso.name       = "mover cadera"
                 constraint_hueso.target     = IK_esqueleto
@@ -1362,9 +1396,17 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode='POSE')
                 
                 # se obtiene los hueso de control y el uso que lo aplicara 
-                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                hueso_ik_pose      = None
+                hueso_objetivo     = None 
                 
+                if version_blender >= blender_5:
+                    # se obtiene los hueso de control y el uso que lo aplicara 
+                    hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                    hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                elif version_blender >= blender_4:
+                    hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
+                    hueso_objetivo      = IK_esqueleto.data.bones.get(hueso_objetivo_name)
+
                 # conecta el control con el boton mostrar 
                 vincular_driver(
                                 "",
@@ -1374,7 +1416,9 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 "mostrar_controles",
                                 "hide","not")
                 
-                # añade un contraitns                
+                # añade un contraitns
+                hueso_ik_.pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)                
                 constraint_hueso = hueso_objetivo.constraints.new(type = "COPY_ROTATION")
                 constraint_hueso.name       = "mover hombros "
                 constraint_hueso.target     = IK_esqueleto
@@ -1447,6 +1491,17 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     bpy.ops.object.mode_set(mode='POSE')
                     
                     
+                     # conecta el control con el boton mostrar             
+                    
+                    if version_blender >= blender_5:
+                        pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    elif version_blender >= blender_4:
+                        pole_pose           = IK_esqueleto.data.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
+                        
+                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_pose,data_path,armature,"mostrar_controles")
                     
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     hueso_pose          = IK_esqueleto.pose.bones.get(codo_name)
@@ -1454,10 +1509,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
                     hueso_mano_r_pose   = IK_esqueleto.pose.bones.get(hueso_mano_r_name)
                     
-                    # conecta el control con el boton mostrar 
                     
-                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
-                    vincular_driver("",pole_pose,data_path,armature,"mostrar_controles")
                     
                     # añade un contraitns                
                     constraint_hueso = hueso_pose.constraints.new(type = "IK")
@@ -1539,7 +1591,17 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # logica del constraints y drivers 
                     bpy.ops.object.mode_set(mode='POSE')
                     
+                     # conecta el control con el boton mostrar             
                     
+                    if version_blender >= blender_5:
+                        pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    elif version_blender >= blender_4:
+                        pole_pose           = IK_esqueleto.data.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
+                        
+                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_pose,data_path,armature,"mostrar_controles")
                     
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     hueso_pose          = IK_esqueleto.pose.bones.get(codo_name)
@@ -1547,10 +1609,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     pole_pose           = IK_esqueleto.pose.bones.get(nombre_pole)
                     hueso_mano_l_pose   = IK_esqueleto.pose.bones.get(hueso_mano_l_name)
                     
-                    # conecta el control con el boton mostrar 
-                    
-                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
-                    vincular_driver("",pole_pose,data_path,armature,"mostrar_controles")
+
                     
                     # añade un contraitns                
                     constraint_hueso = hueso_pose.constraints.new(type = "IK")
@@ -1631,6 +1690,21 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # logica del constraints y drivers 
                     bpy.ops.object.mode_set(mode='POSE')
                     
+                    # conecta el control con el boton mostrar             
+                    
+                    if version_blender >= blender_5:
+                        pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    elif version_blender >= blender_4:
+                        pole_hueso          = IK_esqueleto.data.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
+                        
+                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
+                    
+                    
+                    
+                    
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     
                     constrainst_hueso   = IK_esqueleto.pose.bones.get(codo_name)       #hueso a quien se aplicara el constraint
@@ -1638,10 +1712,6 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)     # hueso a aplicar como polea
                     
                     
-                    # conecta el control con el boton mostrar 
-                    
-                    vincular_driver("",IK               ,data_path,armature,"mostrar_controles")
-                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
                     
                     # añade un contraitns                
                     constraint_hueso = constrainst_hueso.constraints.new(type = "IK")
@@ -1702,11 +1772,12 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 nombre_hueso_ik = hueso_ik.name
                 bpy.ops.object.mode_set(mode='POSE')
                 
-                # se obtiene los hueso de control y el uso que lo aplicara 
-                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
-                
                 # conecta el control con el boton mostrar 
+                if version_blender >= blender_5:
+                    hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                elif version_blender >= blender_4:
+                    hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
+                
                 vincular_driver(
                                 "",
                                 hueso_ik_pose,
@@ -1714,6 +1785,12 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 armature,
                                 "mostrar_controles",
                                 "hide","not")
+                                
+                # se obtiene los hueso de control y el uso que lo aplicara 
+                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+                
+                
                 
                 # añade un contraitns                
                 constraint_hueso = hueso_objetivo.constraints.new(type = "IK")
@@ -1783,17 +1860,26 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                     # logica del constraints y drivers 
                     bpy.ops.object.mode_set(mode='POSE')
                     
+                    
+                    
+                    # conecta el control con el boton mostrar             
+                    
+                    if version_blender >= blender_5:
+                        pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)
+                    elif version_blender >= blender_4:
+                        pole_hueso          = IK_esqueleto.data.bones.get(nombre_pole)
+                        IK                  = IK_esqueleto.data.bones.get(nombre_hueso)
+                        
+                    vincular_driver("",IK,data_path,armature,"mostrar_controles")
+                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
+                    
                     # se obtiene los hueso de control y el uso que lo aplicara 
                     
                     constrainst_hueso   = IK_esqueleto.pose.bones.get(codo_name)       #hueso a quien se aplicara el constraint
                     IK                  = IK_esqueleto.pose.bones.get(nombre_hueso)    #nombre del hueso del target del IK
                     pole_hueso          = IK_esqueleto.pose.bones.get(nombre_pole)     # hueso a aplicar como polea
                     
-                    
-                    # conecta el control con el boton mostrar 
-                    
-                    vincular_driver("",IK               ,data_path,armature,"mostrar_controles")
-                    vincular_driver("",pole_hueso,data_path,armature,"mostrar_controles")
                     
                     # añade un contraitns                
                     constraint_hueso = constrainst_hueso.constraints.new(type = "IK")
@@ -1854,11 +1940,12 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 nombre_hueso_ik = hueso_ik.name
                 bpy.ops.object.mode_set(mode='POSE')
                 
-                # se obtiene los hueso de control y el uso que lo aplicara 
-                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
-                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
-                
                 # conecta el control con el boton mostrar 
+                if version_blender >= blender_5:
+                    hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                elif version_blender >= blender_4:
+                    hueso_ik_pose       = IK_esqueleto.data.bones.get(nombre_hueso_ik)
+                
                 vincular_driver(
                                 "",
                                 hueso_ik_pose,
@@ -1866,6 +1953,11 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 armature,
                                 "mostrar_controles",
                                 "hide","not")
+                
+                # se obtiene los hueso de control y el uso que lo aplicara 
+                hueso_ik_pose       = IK_esqueleto.pose.bones.get(nombre_hueso_ik)
+                hueso_objetivo      = IK_esqueleto.pose.bones.get(hueso_objetivo_name)
+            
                 
                 # añade un contraitns                
                 constraint_hueso = hueso_objetivo.constraints.new(type = "IK")
