@@ -987,11 +987,18 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         if not len(FK_esqueleto.data.bones) == 0 :
             data_path = "control_rig.fk_prop."
             
-            for bone in FK_esqueleto.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                    
-                    if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
-                        vincular_driver(propiedad,bone,data_path,armature)
+            if version_blender >= blender_5:
+                for bone in FK_esqueleto.pose.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
+                        if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+                            pass
+            elif version_blender >= blender_4:
+                for bone in FK_esqueleto.data.bones:
+                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
+                        if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
+                            vincular_driver(propiedad,bone,data_path,armature)
+                            pass         
                         
                         
             bpy.ops.object.mode_set(mode='OBJECT')
