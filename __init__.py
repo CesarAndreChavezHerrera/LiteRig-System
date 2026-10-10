@@ -256,6 +256,17 @@ def crear_propiedad_switch(Nombre, descripcion = "",default = True,update = None
         update=update
     )
     pass
+
+
+# Función aux. para instanciar propiedades texto para controlar huesos
+def crear_propiedad_texto(Nombre,default = "", descripcion = ""):
+    return bpy.props.StringProperty(
+        name=Nombre,
+        description=descripcion,
+        default=default)
+    
+    pass
+
 ######################################################
 #           Funciones asociada al cambio de propiedades 
 ####################################################
@@ -345,7 +356,39 @@ class ARMATURE_SISTEMA_DF_PROPIEDADES(bpy.types.PropertyGroup):
     activar_selecion : crear_propiedad_switch("Activar Selecion DF")
     pass
 
+########################################################################################
+#                 propiedades asociada para la nomenclatura
 
+class ARMATURE_NOMENCLATURA_DF(bpy.types.PropertyGroup):
+    
+    cabeza         : crear_propiedad_texto("head",HUESO_CABEZA)
+    cuello         : crear_propiedad_texto("Neck",HUESO_CUELLO)
+    
+    pecho          : crear_propiedad_texto("Chest",HUESO_PECHO)
+    espalda_media  : crear_propiedad_texto("Middle Spine",HUESO_ESPALDA)
+    #espalda_baja   : crear_propiedad_texto("Lower Spine",HUESO_ESPALDA)
+    pelvis_central : crear_propiedad_texto("Hip",HUESO_PELVIS_CENTRAL)
+    
+    hombro         : crear_propiedad_texto("Clavicle",HUESO_HOMBRO)
+    brazo          : crear_propiedad_texto("Shoulder",HUESO_BRAZO)
+    antebrazo      : crear_propiedad_texto("Forearm",HUESO_ANTEBRAZO)
+    
+    pelvis         : crear_propiedad_texto("Pelvic",HUESO_PELVIS)
+    pierna         : crear_propiedad_texto("Thigh",HUESO_PIERNA)
+    antepierna     : crear_propiedad_texto("Shin",HUESO_ANTEPIERNA)
+    pie            : crear_propiedad_texto("Foot",HUESO_PIE)
+    dedo_pie       : crear_propiedad_texto("Toe",HUESO_DEDO_PIE)
+    
+    mano            : crear_propiedad_texto("Hand",HUESO_MANO)
+    pre_dedo        : crear_propiedad_texto("Pre Finger",HUESO_PRE_DEDO)
+    dedo_indice     : crear_propiedad_texto("Index Finger" ,HUESO_DEDO_INDICE)
+    dedo_anular     : crear_propiedad_texto("Middle Finger",HUESO_DEDO_ANULAR)
+    dedo_medio      : crear_propiedad_texto("Ring Finger"  ,HUESO_DEDO_MEDIO)
+    dedo_mennique   : crear_propiedad_texto("Little Finger",HUESO_DEDO_MENNIQUE)
+    dedo_pulgar     : crear_propiedad_texto("Thumb Finger" ,HUESO_DEDO_PULGAR)
+    
+    
+    pass
 ######################################################################################
 #                         PROPIEDADES ASOCIADA A FK
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
@@ -540,14 +583,17 @@ class ARMATURE_SISTEMA_IPI_PROPIEDADES(bpy.types.PropertyGroup):
 ####################################################
 
 
+
 # clase en cargada de guardar todas las propiedades dentro de bpy.types.Armature.control_rig 
 class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
+    
     
     crear_prop  : bpy.props.PointerProperty(type = ARMATURE_GENERAL_PROPIEDADES)
     df_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_DF_PROPIEDADES)
     fk_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_FK_PROPIEDADES)
     ik_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IK_PROPIEDADES)
     ipi_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IPI_PROPIEDADES)
+    hueso       : bpy.props.PointerProperty(type = ARMATURE_NOMENCLATURA_DF)
     pass
 
 ######################################################
@@ -2555,6 +2601,59 @@ class OBJECT_OT_ELIMINAR_DRIVERS_DF(bpy.types.Operator):
 ###########################################################
    
 
+class DATA_PT_UI_NAME(bpy.types.Panel):
+    bl_label = "Nomenclatura de Sistema"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+        
+    @classmethod
+    def poll(cls,context):
+        obj = context.object
+        return obj and obj.type == 'ARMATURE' and context.mode == 'OBJECT'
+    
+    def draw(self, context):
+        layout = self.layout
+        armature = context.object.data
+        huesos = armature.control_rig.hueso
+        
+        box_cabeza = layout.box()
+        box_cabeza.label(text="head bones", icon= "BONE_DATA")
+        box_cabeza.prop(huesos,"cabeza")
+        box_cabeza.prop(huesos,"cuello")
+        
+        box_espalda = layout.box()
+        box_espalda.label(text = "Spine", icon= "BONE_DATA" )
+        box_espalda.prop(huesos, "pecho")
+        box_espalda.prop(huesos, "espalda_media")
+        box_espalda.prop(huesos, "pelvis_central")
+        
+        box_leg = layout.box()
+        box_leg.label(text = "Leg", icon= "BONE_DATA" )
+        box_leg.prop(huesos, "pelvis")
+        box_leg.prop(huesos, "pierna")
+        box_leg.prop(huesos, "antepierna")
+        box_leg.prop(huesos, "pie")
+        box_leg.prop(huesos, "dedo_pie")
+        
+        box_hand = layout.box()
+        box_hand.label(text = "Hand", icon = "BONE_DATA")
+        box_hand.prop(huesos, "mano")
+        box_hand.prop(huesos, "pre_dedo")
+        box_hand.prop(huesos, "dedo_indice")
+        box_hand.prop(huesos, "dedo_medio")
+        box_hand.prop(huesos, "dedo_anular")
+        box_hand.prop(huesos, "dedo_pulgar")
+        
+                
+    pass
+
+
+
+
+
+
+
 ######################################################################
 #              menu desplegable de generalidades
 ######################################################################   
@@ -3071,12 +3170,16 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
 
 # listado de clases a registrar/desregistrar en Blender
 classes = [
+    
     ARMATURE_GENERAL_PROPIEDADES,
+    
     ARMATURE_SISTEMA_DF_PROPIEDADES,
     ARMATURE_SISTEMA_FK_PROPIEDADES,
     ARMATURE_SISTEMA_IK_PROPIEDADES,
     ARMATURE_SISTEMA_IPI_PROPIEDADES,
+    ARMATURE_NOMENCLATURA_DF,
     ARMATURE_CONTROLADOR_PROPIEDADES,
+    
     
     
     
@@ -3099,6 +3202,7 @@ classes = [
     OBJECT_OT_ELIMINAR_DRIVERS_DF,
     
     
+    DATA_PT_UI_NAME,
     DATA_PT_UI_CREATE_ARMATURE,
     DATA_PT_UI_Control_SISTEMAS,
     DATA_PT_UI_Control_FK,
