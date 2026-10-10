@@ -20,10 +20,30 @@ Asimismo, se esté trabajando en la integración de sistemas de control para ani
 
 ---
 <br><br><br>
-# Nomenclatura
+
+## nombre de los huesos
+
+Los nombre de los huesos siempre estaran en minuscula, y usar la herramienta de **auto name left and right** para definir izquierda y derecha.
+
+| huesos                     | bones area         | nombre del hueso|
+| :---                       | :---               | :---            |
+| --- Cabeza ---             | --- Head ---       | --- Cabeza ---  |
+| hueso de la cabeza         |                    |   cabeza        |
+| hueso de la cabeza         |                    |   cuello        |
+| --- Espalda ---            | --- Back ---       | --- Espalda ---     |
+| hueso del pecho            |                    |   espalda.4         |
+| hueso del hombro right     |                    |   hombro.R          |
+| huesos de la espalda       |                    |   espalda.001       |
+| hueso de la pelvis central |                    |   espalda           |
+| --- Brazo left ---         | --- Arm left ---   | --- Brazo left ---  |
+| hueso del hombro left      |                    |   hombro.L          |
+| --- Pierna left ---        | --- left ---       | --- Pierna left --- |
+| hueso de pelvis Left       |                    |   pelvis.L         |                     
+| hueso de pelvis Right      |                    |   pelvis.R         |
+
+# Regla de nomenclatura
 
 Siempre se comenzara escribiendo el prefijo que define que tipo de hueso es el que se esta usando luego la zona de control que controlara ese hueso y por ultimo el nombre que recibe el hueso
-
 
 | Prefijo   | Zona de control   | nombre del hueso |
 | :---      | :---              |:--- |
