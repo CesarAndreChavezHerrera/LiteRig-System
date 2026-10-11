@@ -1067,7 +1067,7 @@ def propiedad_mostrar_zona(
                     pass
     
                 
-    elif version_blender >= blender_4 :
+    elif version_blender >= blender_3 :
         
         for bone in NUEVO_ESQUELETO.data.bones:
             for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 

@@ -10,8 +10,8 @@ Asimismo, se esté trabajando en la integración de sistemas de control para ani
 | Sistema de Mocap                  | Progreso | Estado |
 | :--- | :---: | :---: |
 | **iPi Motion Capture**            | 70%   | En desarrollo |
-| **Mixamo**                        | 0%    | Pr?ximamente |
-| **FreeMoCap**                     | 0%    | Pr?ximamente |
+| **Mixamo**                        | 0%    | Proximamente |
+| **FreeMoCap**                     | 0%    | Proximamente |
 | **Rokoko**                        | 0%    | Por evaluar |
 | **Plask.ai**                      | 0%    | Por evaluar |
 | **DeepMotion**                    | 0%    | Por evaluar |
