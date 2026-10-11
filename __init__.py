@@ -5,15 +5,6 @@
 ###########################################################
 
 # Información del Add-on registrada en Blender (metadatos principales)
-bl_info = {
-    "name": "LiteRig SYSTEM",
-    "author": "cesar andre chavez herrera",
-    "version": (1, 0, 1),
-    "blender": (5, 0, 0),
-    "location": "Properties > Data (Armature)",
-    "description": "Creacion de un rigging simple para animaciones low poly con soporte para captura de movimiento con ipi mocap.",
-    "category": "Rigging",
-}
 
 
 import bpy
