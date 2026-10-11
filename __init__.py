@@ -363,7 +363,22 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
             
     IPI_creado :  crear_propiedad_switch( 
             "IPI",
-            "Muestra si el esqueleto ya tiene su sistema FK creado",
+            "Muestra si el esqueleto ya tiene su sistema IK creado",
+            False)
+    
+    IPI_creado :  crear_propiedad_switch( 
+            "IPI",
+            "Muestra si el esqueleto ya tiene su sistema IPI creado",
+            False)
+    
+    FreeMoCap_creado :  crear_propiedad_switch( 
+            "FMC",
+            "Muestra si el esqueleto ya tiene su sistema FreeMocap creado",
+            False)
+            
+    MIXAMO_creado :  crear_propiedad_switch( 
+            "MXM",
+            "Muestra si el esqueleto ya tiene su sistema Mixamo creado",
             False)
     pass
 
@@ -2821,7 +2836,8 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         status_bar1 = status.row(align=True)
         status_bar1.enabled = False
         status_bar1.prop(general_prop,"IPI_creado")
-        
+        status_bar1.prop(general_prop,"FreeMoCap_creado")
+        status_bar1.prop(general_prop,"MIXAMO_creado")
         
         box_crear = layout.box()
         box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
