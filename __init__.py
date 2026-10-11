@@ -1120,9 +1120,6 @@ def combinar_esqueleto(DF_ESQUELETO,NUEVO_ESQUELETO):
     pass
 
 
-
-
-    pass
 ###########################################################################
 #                    Conectar huesos deformadores
 
