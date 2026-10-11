@@ -5,7 +5,15 @@
 ###########################################################
 
 # Información del Add-on registrada en Blender (metadatos principales)
-
+bl_info = {
+    "name": "LiteRig system",
+    "author": "Cesar Chavez",
+    "version": (1, 0, 0),
+    "blender": (3, 6, 0), 
+    "location": "View3D > propertier > Data", # Dónde lo encuentra el usuario
+    "description": "Armature",
+    "category": "3D View", # Categoría en las preferencias
+}
 
 import bpy
 from mathutils import Vector
