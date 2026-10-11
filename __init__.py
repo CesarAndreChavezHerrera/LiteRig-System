@@ -24,6 +24,13 @@ version_blender = bpy.app.version
 blender_4 = (4,0,0)
 blender_5 = (5,0,0)
 blender_3 = (3,6,0)
+
+# COLORES
+COLOR_FK = [
+            (0,0.4,0.0),   # verde oscuro
+            (1.0,0.0,0.0), # rojo
+            (0.0,1.0,0.0)  # verde
+            ]
 # LISTA DE PREFIJOS 
 
 PREFIJO_HUESOS_DEFORMACION = "DF."
@@ -838,6 +845,32 @@ def buscar_hueso_especifico_pose(esqueleto,nombre = ""):
     return hueso
     pass
 
+def limpiar_drivers(obj):
+
+    #borra TODOS los drivers
+    if obj.animation_data and obj.animation_data.drivers:
+        for fcurve in obj.animation_data.drivers:
+            fcurve.select = True  # True para seleccionar, False para deseleccionar
+
+    # Seleccionar todas las F-Curves del Data-Block
+    if obj.data.animation_data and obj.data.animation_data.drivers:
+        for fcurve in obj.data.animation_data.drivers:
+            fcurve.select = True        
+    # 1. En el objeto (PoseBones)
+    if obj.animation_data and obj.animation_data.drivers:
+        drivers = obj.animation_data.drivers
+        for fcurve in list(drivers):
+            if fcurve.select:
+                drivers.remove(fcurve)
+
+    # 2. En la armadura (Data-Block)
+    if obj.data.animation_data and obj.data.animation_data.drivers:
+        drivers_data = obj.data.animation_data.drivers
+        for fcurve in list(drivers_data):
+            if fcurve.select:
+                drivers_data.remove(fcurve)
+    pass
+    
 
 ################################################################################
 #
@@ -846,6 +879,109 @@ def buscar_hueso_especifico_pose(esqueleto,nombre = ""):
 #
 #
 ###############################################################################
+# Duplica el esqueleto y selectionar este
+def duplicar_esqueleto(nomenclatura): 
+    
+    
+    # opener el esqueleto
+    bpy.ops.object.mode_set(mode='OBJECT')
+    DF_ESQUELETO = bpy.context.active_object
+    bpy.ops.object.select_all(action='DESELECT')
+    
+    #selecionamos el esqueleto base 
+    DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+    bpy.context.view_layer.objects.active = DF_SELECTION
+    DF_SELECTION.select_set(True)
+    
+    #duplicar esqueleto base 
+    bpy.ops.object.duplicate(linked=False)
+    
+    duplicar_esqueleto = bpy.context.active_object
+    duplicar_esqueleto.name = nomenclatura
+    
+    return duplicar_esqueleto , DF_ESQUELETO
+    pass
+
+# configurar duplicado
+def pre_configurar_esqueleto(self,PREFIJO,colores):
+    
+    # duplicar esqueleto
+    NUEVO_ESQUELETO, DF_ESQUELETO = duplicar_esqueleto(PREFIJO)
+    limpiar_drivers(NUEVO_ESQUELETO)
+    
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    # borra todo los huesos que no sean deformacion                     
+    borrar_huesos_prefijo(
+                        NUEVO_ESQUELETO,
+                        PREFIJO_HUESOS_DEFORMACION,
+                        True)
+    
+    renombrar_prefijo_huesos(
+                            NUEVO_ESQUELETO,
+                            PREFIJO_HUESOS_DEFORMACION,
+                            PREFIJO) 
+    cambiar_color_huesos(
+                        NUEVO_ESQUELETO,
+                        PREFIJO,
+                            colores[0], 
+                            colores[1], 
+                            colores[2])
+    #limpieza
+    bpy.ops.object.mode_set(mode='POSE')
+    eliminar_todo_constraints(self,NUEVO_ESQUELETO,PREFIJO)
+    eliminar_drivers_rotos_esqueleto(NUEVO_ESQUELETO)
+    
+    for bone in NUEVO_ESQUELETO.data.bones:
+       if bone.name.startswith(PREFIJO):
+           bone.hide_select = False
+    
+    return NUEVO_ESQUELETO, DF_ESQUELETO
+    pass
+
+
+# añadir constraint y vincular esquelets con el deformador
+def vincular_esqueletos(
+                        NUEVO_ESQUELETO,     # esqueleto a duplicar
+                        DF_ESQUELETO,        # esqueleto deformaciones
+                        armature, 
+                        PREFIJO,             # prefio del esqueleto a duplicar 
+                        data_path,           # path de propiedades 
+                        contraint_name,      # nombre del contraint que le pondra
+                        contraint_type = "COPY_ROTATION"):
+                            
+    # volver a selectionar el esqueleto de deformacion
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = DF_ESQUELETO
+    bpy.ops.object.mode_set(mode='POSE')
+    
+    # conectar huesos de deformacion con el nuevo esqueleto
+    for bone in DF_ESQUELETO.pose.bones:
+        for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA.items():
+            df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
+            
+            # añadir constraint
+            if bone.name.startswith(df_prefijo):
+                constraint_hueso = bone.constraints.new(type = contraint_type)
+                constraint_hueso.name = contraint_name
+                constraint_hueso.target = NUEVO_ESQUELETO
+                constraint_hueso.subtarget = PREFIJO + bone.name[3:]
+                
+                vincular_driver(propiedad,
+                                    constraint_hueso,
+                                    data_path,
+                                    armature,
+                                    "influencia_maestra",
+                                    "influence",
+                                    "")
+                pass
+            
+        pass
+       #context.object.update_tag(refresh={'DATA'})
+    pass
+
+
 
 ###########################################################################
 #                    Conectar huesos deformadores
@@ -995,53 +1131,12 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         fk        = armature.control_rig
         combinar  = fk.crear_prop.combinar_FK 
         
+        # duplicar esqueleto
+        FK_esqueleto, DF_ESQUELETO = pre_configurar_esqueleto(
+                                                            self,
+                                                            PREFIJO_HUESOS_FK,
+                                                            COLOR_FK)
         
-         
-        bpy.ops.object.mode_set(mode='OBJECT')
-        DF_ESQUELETO = bpy.context.active_object
-        bpy.ops.object.select_all(action='DESELECT')
-        
-        #selecionamos el esqueleto base 
-        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
-        bpy.context.view_layer.objects.active = DF_SELECTION
-        DF_SELECTION.select_set(True)
-        
-        bpy.ops.object.duplicate(linked=False)
-        
-        FK_esqueleto = bpy.context.active_object
-        #FK_esqueleto.location.x += 1
-        FK_esqueleto.name = "FK"
-        
-                
-        if FK_esqueleto.data and FK_esqueleto.data.animation_data and FK_esqueleto.data.animation_data.drivers:
-            for fcurve in list(FK_esqueleto.data.animation_data.drivers):
-                FK_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
-                
-                
-                
-        bpy.ops.object.mode_set(mode='EDIT')
-        
-        # borra todo los huesos que no sean deformacion                     
-        borrar_huesos_prefijo(FK_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
-
-        renombrar_prefijo_huesos(FK_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_FK)
-                                
-        cambiar_color_huesos(FK_esqueleto,PREFIJO_HUESOS_FK,
-                            (0,0.4,0.0), # verde oscuro
-                            (1.0,0.0,0.0), # rojo
-                            (0.0,1.0,0.0)  # verde
-                            )
-        
-        #limpieza 
-        bpy.ops.object.mode_set(mode='POSE')
-        eliminar_todo_constraints(self,FK_esqueleto,PREFIJO_HUESOS_FK)
-        eliminar_todo_constraints(self,FK_esqueleto,PREFIJO_HUESOS_IK)
-        eliminar_drivers_rotos_esqueleto(FK_esqueleto)
-        
-        for bone in FK_esqueleto.data.bones:
-           if bone.name.startswith( PREFIJO_HUESOS_FK):
-               bone.hide_select = False
-               pass
         
         borrar_ik = False
         
@@ -1063,31 +1158,14 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                             pass         
                         
                         
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            bpy.ops.object.mode_set(mode='POSE')
-            
-            for bone in DF_ESQUELETO.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA.items():
-                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
-                    
-                    if bone.name.startswith(df_prefijo):
-                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
-                        constraint_hueso.name = "FK_ROTATION"
-                        constraint_hueso.target = FK_esqueleto
-                        constraint_hueso.subtarget = PREFIJO_HUESOS_FK + bone.name[3:]
-                        
-                        vincular_driver(propiedad,
-                                            constraint_hueso,
-                                            data_path,armature,
-                                            "influencia_maestra",
-                                            "influence","")
-                        
-                        pass
-                    
-                pass
-                context.object.update_tag(refresh={'DATA'})
+            vincular_esqueletos(FK_esqueleto,
+                                DF_ESQUELETO,
+                                armature,
+                                PREFIJO_HUESOS_FK,
+                                data_path,
+                                "FK_ROTATION")
+                                
+                                
         else:
             # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
 
