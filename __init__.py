@@ -31,6 +31,18 @@ COLOR_FK = [
             (1.0,0.0,0.0), # rojo
             (0.0,1.0,0.0)  # verde
             ]
+COLOR_IK = [
+            (1.0,0.9,0.6), # naranja
+            (1.0,0.0,0.0), # rojo
+            (0.0,1.0,0.0)  # verde
+            ]
+            
+COLOR_IK_CONTROL = [
+                    (0.7,0.0,0.0), # rojo
+                    (0.0,1.0,1.0), # celeste
+                    (0.0,1.0,0.0)  # verde 
+                    ]
+
 # LISTA DE PREFIJOS 
 
 PREFIJO_HUESOS_DEFORMACION = "DF."
@@ -403,7 +415,7 @@ class ARMATURE_NOMENCLATURA_DF(bpy.types.PropertyGroup):
     
     pecho          : crear_propiedad_texto("Chest",HUESO_PECHO)
     espalda_media  : crear_propiedad_texto("Middle Spine",HUESO_ESPALDA)
-    #espalda_baja   : crear_propiedad_texto("Lower Spine",HUESO_ESPALDA)
+    espalda_baja   : crear_propiedad_texto("Lower Spine",HUESO_ESPALDA)
     pelvis_central : crear_propiedad_texto("Hip",HUESO_PELVIS_CENTRAL)
     
     hombro         : crear_propiedad_texto("Clavicle",HUESO_HOMBRO)
@@ -969,6 +981,29 @@ def pre_configurar_esqueleto(self,PREFIJO,colores):
     return NUEVO_ESQUELETO, DF_ESQUELETO
     pass
 
+def add_contraints_influencia(
+                    bone,              # hueso a añadir constraint
+                    contraint_type,    # tipo de contraints
+                    contraint_name,    # nombre a poner al contraint
+                    esqueleto_target,  # esqueleto a conectar (origen)
+                    PREFIJO,           # prefijo
+                    data_path,         # ruta de la propiedad
+                    armature,          # armature original
+                    propiedad          # propiedad a vincular
+                    ):
+                        
+    constraint_hueso = bone.constraints.new(type = contraint_type)
+    constraint_hueso.name = contraint_name
+    constraint_hueso.target = esqueleto_target
+    constraint_hueso.subtarget = PREFIJO + bone.name[3:]
+
+    vincular_driver(propiedad,
+                    constraint_hueso,
+                    data_path,
+                    armature,
+                    "influencia_maestra",
+                    "influence", "")
+    pass 
 
 # añadir constraint y vincular esquelets con el deformador
 def vincular_esqueletos(
@@ -993,18 +1028,17 @@ def vincular_esqueletos(
             
             # añadir constraint
             if bone.name.startswith(df_prefijo):
-                constraint_hueso = bone.constraints.new(type = contraint_type)
-                constraint_hueso.name = contraint_name
-                constraint_hueso.target = NUEVO_ESQUELETO
-                constraint_hueso.subtarget = PREFIJO + bone.name[3:]
                 
-                vincular_driver(propiedad,
-                                    constraint_hueso,
-                                    data_path,
-                                    armature,
-                                    "influencia_maestra",
-                                    "influence",
-                                    "")
+                add_contraints_influencia(
+                                        bone,
+                                        contraint_type,
+                                        contraint_name,
+                                        NUEVO_ESQUELETO,
+                                        PREFIJO,
+                                        data_path,
+                                        armature,
+                                        propiedad
+                                        )
                 pass
             
         pass
@@ -1083,6 +1117,11 @@ def combinar_esqueleto(DF_ESQUELETO,NUEVO_ESQUELETO):
 
     bpy.context.view_layer.objects.active = df_join
     bpy.ops.object.join()
+    pass
+
+
+
+
     pass
 ###########################################################################
 #                    Conectar huesos deformadores
@@ -1233,7 +1272,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         combinar  = fk.crear_prop.combinar_FK 
         
         if fk.crear_prop.FK_creado:
-            self.report({"INFO"},"Sistema FK fue creado")
+            self.report({"INFO"},"Sistema FK Ya existe")
             return {'FINISHED'}
             pass
         # duplicar esqueleto
@@ -1294,118 +1333,52 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         # esqueleto principal
         armature  = context.object.data
         ik        = armature.control_rig
-        combinar  = ik.crear_prop.combinar_IK  
+        combinar  = ik.crear_prop.combinar_IK
         
-        bpy.ops.object.mode_set(mode='OBJECT')
-        DF_ESQUELETO = bpy.context.active_object
+        esqueleto_nomenclatura = ik.hueso 
         
-        bpy.ops.object.select_all(action='DESELECT')
+        if ik.crear_prop.IK_creado:
+            self.report({"INFO"},"Sistema IK Ya existe")
+            return {'FINISHED'}
+            pass
         
-        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
+        IK_esqueleto , DF_ESQUELETO = pre_configurar_esqueleto(self,PREFIJO_HUESOS_IK,COLOR_IK)
         
-        bpy.context.view_layer.objects.active = DF_SELECTION
-        DF_SELECTION.select_set(True)
-        
-        bpy.ops.object.duplicate(linked=False)
-        
-        IK_esqueleto = bpy.context.active_object
-        #IK_esqueleto.location.x -= 1
-        IK_esqueleto.name = "IK"
-        
-        if IK_esqueleto.data and IK_esqueleto.data.animation_data and IK_esqueleto.data.animation_data.drivers:
-            for fcurve in list(IK_esqueleto.data.animation_data.drivers):
-                IK_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
-        
-        
-        bpy.ops.object.mode_set(mode='EDIT')
-        borrar_huesos_prefijo(IK_esqueleto,PREFIJO_HUESOS_DEFORMACION,True)
-        renombrar_prefijo_huesos(IK_esqueleto,PREFIJO_HUESOS_DEFORMACION, PREFIJO_HUESOS_IK)
-        cambiar_color_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,
-                            (1.0,0.9,0.6), # naranja
-                            (1.0,0.0,0.0), # rojo
-                            (0.0,1.0,0.0)  # verde
-                            )
-        # limpieza                  
-        bpy.ops.object.mode_set(mode='POSE')
-        eliminar_todo_constraints(self,IK_esqueleto,PREFIJO_HUESOS_IK)
-        eliminar_todo_constraints(self,IK_esqueleto,PREFIJO_HUESOS_FK)
-        eliminar_drivers_rotos_esqueleto(IK_esqueleto)
-        
-        
-        
-        for bone in IK_esqueleto.data.bones:
-           if bone.name.startswith(PREFIJO_HUESOS_IK):
-               bone.hide_select = False
-               pass
-           
         borrar_ik = False
         
         if not len(IK_esqueleto.data.bones) == 0 :
+            
+            ik.crear_prop.IK_creado = True
             data_path = "control_rig.ik_prop."
             
-            if version_blender >=blender_5:
-                
-                for bone in IK_esqueleto.pose.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                        
-                        if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
             
-            elif version_blender >= blender_3:   
-                
-                for bone in IK_esqueleto.data.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                        
-                        if bone.name.startswith(PREFIJO_HUESOS_IK+prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
+            propiedad_mostrar_zona(IK_esqueleto,armature,PREFIJO_HUESOS_IK,data_path)
             
-                pass
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            bpy.ops.object.mode_set(mode='POSE')
+            vincular_esqueletos(IK_esqueleto,
+                                DF_ESQUELETO,
+                                armature,
+                                PREFIJO_HUESOS_IK,
+                                data_path,
+                                "IK_ROTATION")
             
-            for bone in DF_ESQUELETO.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA.items():
-                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
-                    
-                    if bone.name.startswith(df_prefijo):
-                        #constraint_hueso = bone.constraints.new(type = "COPY_TRANSFORMS")
-                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
-                        constraint_hueso.name = "IK_ROTATION"
-                        constraint_hueso.target = IK_esqueleto
-                        constraint_hueso.subtarget = PREFIJO_HUESOS_IK + bone.name[3:]
-                        
-                        vincular_driver(propiedad,
-                                            constraint_hueso,
-                                            data_path,
-                                            armature,
-                                            "influencia_maestra",
-                                            "influence","")
-                        
-                        pass
-                
-                pass
-            
-            espalda_deformador_nombre = PREFIJO_HUESOS_DEFORMACION + ZONA_ESPALDA + "espalda"
+            espalda_deformador_nombre = PREFIJO_HUESOS_DEFORMACION + ZONA_ESPALDA + esqueleto_nomenclatura.pelvis_central
             #hueso_to_copy_nombre      = PREFIJO_HUESOS_IK          + ZONA_ESPALDA + "espalda"
             
-            
+            self.report({"INFO"},f"{espalda_deformador_nombre}")
             espalda_objetivo = DF_ESQUELETO.pose.bones.get(espalda_deformador_nombre)
             
             if not espalda_objetivo == None:
                 
-                constraint = espalda_objetivo.constraints.new(type = "COPY_TRANSFORMS")
-                constraint.name = "IK_TRANSFORMS"
-                constraint.target = IK_esqueleto
-                constraint.subtarget = PREFIJO_HUESOS_IK + espalda_objetivo.name[3:]
-                
-                vincular_driver(PROP_INFLUENCIA + ZONA_ESPALDA [:-1].lower(),
-                                constraint,
-                                data_path,
-                                armature,
-                                "influencia_maestra",
-                                "influence","")
+                add_contraints_influencia(
+                                        espalda_objetivo,
+                                        "COPY_TRANSFORMS",
+                                        "IK_TRANSFORMS",
+                                        IK_esqueleto,
+                                        PREFIJO_HUESOS_IK,
+                                        data_path,
+                                        armarture,
+                                        PROP_INFLUENCIA + ZONA_ESPALDA [:-1].lower()
+                                        ) 
                 pass
             else:
                 self.report("Hueso base de la espalda no encontrado")
@@ -2604,7 +2577,7 @@ class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator):
     def execute(self, context): 
         
         obj = context.object
-        
+        obj.data.control_rig.crear_prop.IK_creado = False
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
         esqueleto = obj
@@ -2775,6 +2748,7 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         box_espalda.label(text = "Spine", icon= "BONE_DATA" )
         box_espalda.prop(huesos, "pecho")
         box_espalda.prop(huesos, "espalda_media")
+        box_espalda.prop(huesos, "espalda_baja")
         box_espalda.prop(huesos, "pelvis_central")
         
         box_leg = layout.box()
