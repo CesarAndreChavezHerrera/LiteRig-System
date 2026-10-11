@@ -1018,6 +1018,34 @@ def propiedad_mostrar_zona(
                     pass                                              
     pass
 
+# eliminar esqueleto vacio
+def eliminar_esqueleto_vacio(DF_ESQUELETO,NUEVO_ESQUELETO):
+    
+    # selectionar esqueleto vacio
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.context.view_layer.objects.active = NUEVO_ESQUELETO
+    NUEVO_ESQUELETO.select_set(True)
+    # eliminar esqueleto 
+    bpy.ops.object.delete(use_global=False)
+    bpy.ops.object.select_all(action='DESELECT')
+    # volver a selectionar
+    bpy.context.view_layer.objects.active = DF_ESQUELETO
+    DF_ESQUELETO.select_set(True)
+    pass
+
+# combinar esqueletos
+def combinar_esqueleto(DF_ESQUELETO,NUEVO_ESQUELETO):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    nuevo_join = bpy.data.objects.get(NUEVO_ESQUELETO.name)
+    df_join    = bpy.data.objects.get(DF_ESQUELETO.name)
+
+    df_join.select_set(True)
+    nuevo_join.select_set(True)
+
+    bpy.context.view_layer.objects.active = df_join
+    bpy.ops.object.join()
+    pass
 ###########################################################################
 #                    Conectar huesos deformadores
 
@@ -1173,7 +1201,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                                                             COLOR_FK)
         
         
-        borrar_ik = False
+        borrar = False
         
         if not len(FK_esqueleto.data.bones) == 0 :
             data_path = "control_rig.fk_prop."
@@ -1182,7 +1210,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                                     armature,
                                     PREFIJO_HUESOS_FK,
                                     data_path)            
-                        
+            
             vincular_esqueletos(FK_esqueleto,
                                 DF_ESQUELETO,
                                 armature,
@@ -1190,32 +1218,15 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                                 data_path,
                                 "FK_ROTATION")
                                 
-                                
         else:
             # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
+            eliminar_esqueleto_vacio(DF_ESQUELETO,FK_esqueleto)
+            borrar = True
 
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.context.view_layer.objects.active = FK_esqueleto
-            FK_esqueleto.select_set(True)
-            bpy.ops.object.delete(use_global=False)
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            DF_ESQUELETO.select_set(True)
-            borrar_ik = True
-        
-        
         if combinar:
-            if not borrar_ik:
-                bpy.ops.object.mode_set(mode='OBJECT')
+            if not borrar:
                 
-                fk_join = bpy.data.objects.get(FK_esqueleto.name)
-                df_join = bpy.data.objects.get(DF_ESQUELETO.name)
-                
-                df_join.select_set(True)
-                fk_join.select_set(True)
-                
-                bpy.context.view_layer.objects.active = df_join
-                bpy.ops.object.join()
+                combinar_esqueleto(DF_ESQUELETO,FK_esqueleto)
             else:
                 self.report({"INFO"},"Sistema IK No creado")
         
