@@ -350,6 +350,7 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
         "Combinar IPI",
         "Habilita que despues de crear el sistema Mocap ipi software lo combine con el esqueleto base"
         )
+     
     pass
 
 
@@ -1018,6 +1019,14 @@ def propiedad_mostrar_zona(
                     pass                                              
     pass
 
+# no combinar modo 
+def no_combinar_esqueleto(DF_ESQUELETO):
+    
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = DF_ESQUELETO
+    DF_ESQUELETO.select_set(True)
+    pass
 # eliminar esqueleto vacio
 def eliminar_esqueleto_vacio(DF_ESQUELETO,NUEVO_ESQUELETO):
     
@@ -1195,21 +1204,14 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         combinar  = fk.crear_prop.combinar_FK 
         
         # duplicar esqueleto
-        FK_esqueleto, DF_ESQUELETO = pre_configurar_esqueleto(
-                                                            self,
-                                                            PREFIJO_HUESOS_FK,
-                                                            COLOR_FK)
-        
+        FK_esqueleto, DF_ESQUELETO = pre_configurar_esqueleto(self,PREFIJO_HUESOS_FK,COLOR_FK)
         
         borrar = False
         
         if not len(FK_esqueleto.data.bones) == 0 :
             data_path = "control_rig.fk_prop."
             
-            propiedad_mostrar_zona(FK_esqueleto,
-                                    armature,
-                                    PREFIJO_HUESOS_FK,
-                                    data_path)            
+            propiedad_mostrar_zona(FK_esqueleto,armature,PREFIJO_HUESOS_FK,data_path)            
             
             vincular_esqueletos(FK_esqueleto,
                                 DF_ESQUELETO,
@@ -1228,16 +1230,11 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                 
                 combinar_esqueleto(DF_ESQUELETO,FK_esqueleto)
             else:
-                self.report({"INFO"},"Sistema IK No creado")
+                self.report({"INFO"},"Sistema FK No creado")
         
         else:
-            
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            DF_ESQUELETO.select_set(True)
-            
-            self.report({"INFO"},"Se combino el esqueleto IK con el esqueleto DF")
+            no_combinar_esqueleto(DF_ESQUELETO)
+            self.report({"INFO"},"Se creo el sistema FK")
             pass
     
         return {'FINISHED'}
