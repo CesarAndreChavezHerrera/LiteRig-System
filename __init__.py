@@ -350,7 +350,21 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
         "Combinar IPI",
         "Habilita que despues de crear el sistema Mocap ipi software lo combine con el esqueleto base"
         )
-     
+    
+    FK_creado :  crear_propiedad_switch( 
+                "FK",
+                "Muestra si el esqueleto ya tiene su sistema FK creado",
+                False)
+                
+    IK_creado :  crear_propiedad_switch( 
+            "IK",
+            "Muestra si el esqueleto ya tiene su sistema FK creado",
+            False)
+            
+    IPI_creado :  crear_propiedad_switch( 
+            "IPI",
+            "Muestra si el esqueleto ya tiene su sistema FK creado",
+            False)
     pass
 
 
@@ -1203,12 +1217,17 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         fk        = armature.control_rig
         combinar  = fk.crear_prop.combinar_FK 
         
+        if fk.crear_prop.FK_creado:
+            self.report({"INFO"},"Sistema FK fue creado")
+            return {'FINISHED'}
+            pass
         # duplicar esqueleto
         FK_esqueleto, DF_ESQUELETO = pre_configurar_esqueleto(self,PREFIJO_HUESOS_FK,COLOR_FK)
         
         borrar = False
         
         if not len(FK_esqueleto.data.bones) == 0 :
+            fk.crear_prop.FK_creado = True
             data_path = "control_rig.fk_prop."
             
             propiedad_mostrar_zona(FK_esqueleto,armature,PREFIJO_HUESOS_FK,data_path)            
@@ -1230,6 +1249,7 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
                 
                 combinar_esqueleto(DF_ESQUELETO,FK_esqueleto)
             else:
+                fk.crear_prop.FK_creado = False
                 self.report({"INFO"},"Sistema FK No creado")
         
         else:
@@ -2527,7 +2547,10 @@ class OBJECT_OT_ELIMINAR_FK(bpy.types.Operator):
     def execute(self, context): 
         
         obj = context.object
+        armature  = context.object.data
+        fk        = armature.control_rig
         
+        fk.crear_prop.FK_creado = False
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
         esqueleto = obj
@@ -2786,6 +2809,20 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         armature = context.object.data
         general_prop = armature.control_rig.crear_prop
         
+                # mostrar sistemas creado 
+        #status_bar = layout.grid_flow(columns=0, row_major=True, align=True)
+        status = layout.box()
+        status.label(text="SISTEMAS CREADO")
+        status_bar = status.row(align=True)
+        status_bar.enabled = False
+        status_bar.prop(general_prop,"FK_creado")
+        status_bar.prop(general_prop,"IK_creado")
+        
+        status_bar1 = status.row(align=True)
+        status_bar1.enabled = False
+        status_bar1.prop(general_prop,"IPI_creado")
+        
+        
         box_crear = layout.box()
         box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
         box_crear.operator("object.configurar_df"          ,icon="BONE_DATA")
@@ -2803,7 +2840,9 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         fila_3 = box_crear.row(align=True)
         fila_3.prop(general_prop, "combinar_IPI", toggle=True)
         fila_3.operator("object.generar_ipi",icon="BONE_DATA")
-        
+
+
+
         
         pass
     pass
