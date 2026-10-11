@@ -981,7 +981,42 @@ def vincular_esqueletos(
        #context.object.update_tag(refresh={'DATA'})
     pass
 
+# conecta la propiedades de mostrar segun su prefijo
+def propiedad_mostrar_zona(
+                        NUEVO_ESQUELETO,      # esqueleto a conectar con mostrar
+                        armature,             # armatura original
+                        PREFIJO,              # prefijo del esqueleto
+                        data_path             # ruta de la propiedad 
+                        ):
+    
+    if version_blender >= blender_5:
+        # re corre todo los huesos 
+        for bone in NUEVO_ESQUELETO.pose.bones:
 
+            for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
+                
+                if bone.name.startswith(PREFIJO+prefijo):
+                    #driver mostar con el hueso 
+                    vincular_driver(propiedad,
+                                    bone,
+                                    data_path,
+                                    armature)
+                    pass
+    
+                
+    elif version_blender >= blender_4 :
+        
+        for bone in NUEVO_ESQUELETO.data.bones:
+            for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
+                
+                if bone.name.startswith(PREFIJO+prefijo):
+                    #driver mostrar con el hueso  
+                    vincular_driver(propiedad,
+                                    bone,
+                                    data_path,
+                                    armature)
+                    pass                                              
+    pass
 
 ###########################################################################
 #                    Conectar huesos deformadores
@@ -1143,20 +1178,10 @@ class OBJECT_OT_Generar_sistema_FK(bpy.types.Operator):
         if not len(FK_esqueleto.data.bones) == 0 :
             data_path = "control_rig.fk_prop."
             
-            if version_blender >= blender_5:
-                for bone in FK_esqueleto.pose.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
-                        if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
-                            pass
-                        
-            elif version_blender >= blender_3 :
-                for bone in FK_esqueleto.data.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items(): 
-                        if bone.name.startswith(PREFIJO_HUESOS_FK+prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
-                            pass         
-                        
+            propiedad_mostrar_zona(FK_esqueleto,
+                                    armature,
+                                    PREFIJO_HUESOS_FK,
+                                    data_path)            
                         
             vincular_esqueletos(FK_esqueleto,
                                 DF_ESQUELETO,
