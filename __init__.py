@@ -1372,7 +1372,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                         IK_esqueleto,
                                         PREFIJO_HUESOS_IK,
                                         data_path,
-                                        armarture,
+                                        armature,
                                         PROP_INFLUENCIA + ZONA_ESPALDA [:-1].lower()
                                         ) 
                 pass
