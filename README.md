@@ -37,9 +37,26 @@ Los nombre de los huesos siempre estaran en minuscula, y usar la herramienta de 
 | hueso de la pelvis central |                    |   espalda           |
 | --- Brazo left ---         | --- Arm left ---   | --- Brazo left ---  |
 | hueso del hombro left      |                    |   hombro.L          |
-| --- Pierna left ---        | --- left ---       | --- Pierna left --- |
-| hueso de pelvis Left       |                    |   pelvis.L         |                     
-| hueso de pelvis Right      |                    |   pelvis.R         |
+| hueso del brazo            |                    |   brazo.L           |
+| hueso del antebrazo        |                    |   antebrazo.L       |
+| hueso del mano             |                    |   mano.L            |
+| --- Pierna left ---        | --- leg left ---   | --- Pierna left --- |
+| hueso de pelvis Left       |                    |   pelvis.L          |                     
+| hueso de pierna            |                    |   pierna.L          |
+| hueso de la pantorrilla    |                    |   antepierna.L      |
+| hueso del Pie              |                    |   pie.L             |
+| hueso de los dedos del pie |                    |   dedos.L           |
+| --- Brazo Right ---        | --- Arm Right ---  | --- Brazo Right --- |
+| hueso del hombro Right     |                    |   hombro.R          |
+| hueso del brazo            |                    |   brazo.R           |
+| hueso del antebrazo        |                    |   antebrazo.R       |
+| hueso del mano             |                    |   mano.R            |
+| --- Pierna Right ---       | --- Leg Right ---  | --- Pierna Right ---|
+| hueso de pelvis Right      |                    |   pelvis.R          |                     
+| hueso de pierna            |                    |   pierna.R          |
+| hueso de la pantorrilla    |                    |   antepierna.R      |
+| hueso del Pie              |                    |   pie.R             |
+| hueso de los dedos del pie |                    |   dedos.R           |
 
 # Regla de nomenclatura
 
