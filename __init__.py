@@ -251,6 +251,25 @@ MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
 
 }
 
+opcion_mocap_0 = ["opcion_ipi_mocap"     ,"IPI MOCAP"]
+opcion_mocap_1 = ["opcion_freemocap"     ,"FreeMocap"]
+opcion_mocap_2 = ["opcion_mixamo"        ,"Mixamo"]
+opcion_mocap_3 = ["opcion_rokoko"        ,"Rokoko"]
+opcion_mocap_4 = ["opcion_plask_ai"      ,"Plask.ai"]
+opcion_mocap_5 = ["opcion_deepmotion"    ,"DeepMotion"]
+opcion_mocap_6 = ["opcion_xsens_animate" ,"Xsens Animate"]
+opcion_mocap_7 = ["opcion_inersial"      ,"seguimiento inercial generico"]
+
+OPCIONES_MOCAP = [
+    (*opcion_mocap_0, "Retargeting para mocap de IPI soft", "",0),
+    (*opcion_mocap_1, "Retargeting para mocap de FreeMocap", "",1),
+    (*opcion_mocap_2, "Retargeting para mocap de Mixamo", "",2),
+    (*opcion_mocap_3, "Retargeting para mocap de Rokoko", "",3),    
+    (*opcion_mocap_4, "Retargeting para mocap de Rokoko", "",4),
+    (*opcion_mocap_5, "Retargeting para mocap de Rokoko", "",5),
+    (*opcion_mocap_6, "Retargeting para mocap de Rokoko", "",6),
+    (*opcion_mocap_7, "Retargeting para mocap de Rokoko", "",7), 
+    ]
 ###########################################################
 #
 #     PROPIEDADES A EXPONER
@@ -495,6 +514,9 @@ class ARMATURE_SISTEMA_FK_PROPIEDADES(bpy.types.PropertyGroup):
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
     
+
+                            
+    
     mostrar_controles   : crear_propiedad_switch("Mostrar Controles")
     mostrar             : crear_propiedad_switch("Mostrar Huesos IK",
                             update= Actualizar_mostrar)
@@ -558,6 +580,10 @@ class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
 # propiedades MOCAP: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_MOCAP_PROPIEDADES(bpy.types.PropertyGroup):
     
+    tipo_mocap          : bpy.props.EnumProperty(
+                        name    = "Origen",
+                        items   = OPCIONES_MOCAP,
+                        default = opcion_mocap_0[0])
 
     mostrar             : crear_propiedad_switch("Mostrar MOCAP",
                             update= Actualizar_mostrar)
@@ -3123,8 +3149,31 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         influencia.prop(IK,"influencia_maestra")
         influencia.prop(MOCAP,"influencia_maestra")
         
-        
+######################################################################
+#       control del procesamiento para mocap para el retargering 
+######################################################################
 
+# menu de control global 
+class DATA_PT_UI_PROCESAMIENTO_MOCAP(bpy.types.Panel):
+    
+    bl_label = "Procesamiento de retagering"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "data"  # Apunta a la pestaña Data
+    
+    @classmethod
+    def poll(cls,context):
+        return context.object is not None and context.object.type == "ARMATURE" and context.mode == 'POSE'
+    pass       
+    
+    def draw(self, context):
+        layout = self.layout
+        
+        MOCAP = context.active_object.data.control_rig.mocap_prop    
+        box_general = layout.box()
+        row1 = box_general.row()
+        
+        row1.prop(MOCAP,"tipo_mocap")    
 
 ######################################################################
 #         menu desplegable de control en modo editicion
@@ -3190,7 +3239,6 @@ classes = [
     
     
     
-    
     OBJECT_OT_Generar_sistema_FK,
     OBJECT_OT_Generar_sistema_IK,
     OBJECT_OT_Generar_sistema_MOCAP,
@@ -3213,6 +3261,7 @@ classes = [
     DATA_PT_UI_NAME,
     DATA_PT_UI_CREATE_ARMATURE,
     DATA_PT_UI_Control_SISTEMAS,
+    DATA_PT_UI_PROCESAMIENTO_MOCAP,
     DATA_PT_UI_Control_FK,
     DATA_PT_UI_Control_IK,
     DATA_PT_UI_Control_MOCAP,
