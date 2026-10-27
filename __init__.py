@@ -47,7 +47,7 @@ COLOR_IK_CONTROL = [
 PREFIJO_HUESOS_DEFORMACION = "DF."
 PREFIJO_HUESOS_FK          = "FK."
 PREFIJO_HUESOS_IK          = "IK."
-PREFIJO_HUESOS_IPI         = "IPI."
+PREFIJO_HUESOS_MOCAP         = "MOCAP."
 
 PREFIJO_HUESOS_FIJADOR     = "PIN."
 PREFIJO_HUESOS_ACCESORIOS  = "PROP."
@@ -214,33 +214,33 @@ MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA = {
 }
 
 MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
-    "IPI.Head"  : "IPI.CABEZA.cabeza",
-    "IPI.Neck"  : "IPI.CABEZA.cuello",
+    "Head"  : "MOCAP.CABEZA.cabeza",
+    "Neck"  : "MOCAP.CABEZA.cuello",
     
-    "IPI.Chest"        : "IPI.ESPALDA.espalda.4",
-    "IPI.MiddleSpine"  : "IPI.ESPALDA.espalda.3",
-    "IPI.LowerSpine"   : "IPI.ESPALDA.espalda.1",
-    "IPI.Hip"          : "IPI.ESPALDA.espalda",
+    "Chest"        : "MOCAP.ESPALDA.espalda.4",
+    "MiddleSpine"  : "MOCAP.ESPALDA.espalda.3",
+    "LowerSpine"   : "MOCAP.ESPALDA.espalda.1",
+    "Hip"          : "MOCAP.ESPALDA.espalda",
     
-    "IPI.LThigh"      : "IPI.PIERNA_L.pierna.L",
-    "IPI.LShin"       : "IPI.PIERNA_L.antepierna.L",
-    "IPI.LFoot"       : "IPI.PIE_L.pie.L",
-    "IPI.LToe"       : "IPI.PIE_L.dedos.L",
+    "LThigh"      : "MOCAP.PIERNA_L.pierna.L",
+    "LShin"       : "MOCAP.PIERNA_L.antepierna.L",
+    "LFoot"       : "MOCAP.PIE_L.pie.L",
+    "LToe"       : "MOCAP.PIE_L.dedos.L",
     
-    "IPI.LClavicle"  : "IPI.BRAZO_L.hombro.L",
-    "IPI.LShoulder"  : "IPI.BRAZO_L.brazo.L",
-    "IPI.LForearm"   : "IPI.BRAZO_L.antebrazo.L",
-    "IPI.LHand"      : "IPI.MANO_L.mano.L",
+    "LClavicle"  : "MOCAP.BRAZO_L.hombro.L",
+    "LShoulder"  : "MOCAP.BRAZO_L.brazo.L",
+    "LForearm"   : "MOCAP.BRAZO_L.antebrazo.L",
+    "LHand"      : "MOCAP.MANO_L.mano.L",
     
-    "IPI.RThigh"      : "IPI.PIERNA_R.pierna.R",
-    "IPI.RShin"       : "IPI.PIERNA_R.antepierna.R",
-    "IPI.RFoot"       : "IPI.PIE_R.pie.R",
-    "IPI.RToe"        : "IPI.PIE_R.dedos.R",
+    "RThigh"      : "MOCAP.PIERNA_R.pierna.R",
+    "RShin"       : "MOCAP.PIERNA_R.antepierna.R",
+    "RFoot"       : "MOCAP.PIE_R.pie.R",
+    "RToe"        : "MOCAP.PIE_R.dedos.R",
     
-    "IPI.RClavicle"  : "IPI.BRAZO_R.hombro.R",
-    "IPI.RShoulder"  : "IPI.BRAZO_R.brazo.R",
-    "IPI.RForearm"   : "IPI.BRAZO_R.antebrazo.R",
-    "IPI.RHand"      : "IPI.MANO_R.mano.R",
+    "RClavicle"  : "MOCAP.BRAZO_R.hombro.R",
+    "RShoulder"  : "MOCAP.BRAZO_R.brazo.R",
+    "RForearm"   : "MOCAP.BRAZO_R.antebrazo.R",
+    "RHand"      : "MOCAP.MANO_R.mano.R",
     
     
 
@@ -356,10 +356,10 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
         "Habilita que despues de crear el sistema IK lo combine con el esqueleto base"
         )
     
-    # propiedad ACTIVAR COMBINAR el esqueleto IPI con el esqueleto base
-    combinar_IPI : crear_propiedad_switch(
-        "Combinar IPI",
-        "Habilita que despues de crear el sistema Mocap ipi software lo combine con el esqueleto base"
+    # propiedad ACTIVAR COMBINAR el esqueleto MOCAP con el esqueleto base
+    combinar_MOCAP : crear_propiedad_switch(
+        "Combinar MOCAP",
+        "Habilita que despues de crear el sistema Mocap MOCAP software lo combine con el esqueleto base"
         )
     
     FK_creado :  crear_propiedad_switch( 
@@ -549,65 +549,65 @@ class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
     pass
 
 ######################################################################################
-#                         PROPIEDADES ASOCIADA A IPI
-# propiedades IPI: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
-class ARMATURE_SISTEMA_IPI_PROPIEDADES(bpy.types.PropertyGroup):
+#                         PROPIEDADES ASOCIADA A MOCAP
+# propiedades MOCAP: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
+class ARMATURE_SISTEMA_MOCAP_PROPIEDADES(bpy.types.PropertyGroup):
     
 
-    mostrar             : crear_propiedad_switch("Mostrar IPI",
+    mostrar             : crear_propiedad_switch("Mostrar MOCAP",
                             update= Actualizar_mostrar)
                             
-    influencia_maestra  : crear_propiedad_sliders("Influencia IPI",
+    influencia_maestra  : crear_propiedad_sliders("Influencia MOCAP",
                             update= Actualizar_influencia)
     
     # cabeza 
-    mostrar_cabeza       : crear_propiedad_switch("Mostrar cabeza IPI")
-    influencia_cabeza    : crear_propiedad_sliders("Influencia cabeza IPI")
+    mostrar_cabeza       : crear_propiedad_switch("Mostrar cabeza MOCAP")
+    influencia_cabeza    : crear_propiedad_sliders("Influencia cabeza MOCAP")
     
-    mostrar_cejas        : crear_propiedad_switch("Mostrar cejas IPI")
-    influencia_cejas     : crear_propiedad_sliders("Influencia cejas IPI")
+    mostrar_cejas        : crear_propiedad_switch("Mostrar cejas MOCAP")
+    influencia_cejas     : crear_propiedad_sliders("Influencia cejas MOCAP")
     
-    mostrar_ojos        : crear_propiedad_switch("Mostrar ojos IPI")
-    influencia_ojos     : crear_propiedad_sliders("Influencia ojos IPI")
+    mostrar_ojos        : crear_propiedad_switch("Mostrar ojos MOCAP")
+    influencia_ojos     : crear_propiedad_sliders("Influencia ojos MOCAP")
     
-    mostrar_boca        : crear_propiedad_switch("Mostrar boca IPI")
-    influencia_boca     : crear_propiedad_sliders("Influencia boca IPI")
+    mostrar_boca        : crear_propiedad_switch("Mostrar boca MOCAP")
+    influencia_boca     : crear_propiedad_sliders("Influencia boca MOCAP")
     
     #espalda
-    mostrar_espalda      : crear_propiedad_switch("Mostrar Espalda IPI")
-    influencia_espalda   : crear_propiedad_sliders( "Influencia Espalda IPI")
+    mostrar_espalda      : crear_propiedad_switch("Mostrar Espalda MOCAP")
+    influencia_espalda   : crear_propiedad_sliders( "Influencia Espalda MOCAP")
     
     #brazo L
-    mostrar_brazo_l     : crear_propiedad_switch("Mostrar Brazo L IPI")
-    influencia_brazo_l   : crear_propiedad_sliders( "Influencia Brazo L IPI")
+    mostrar_brazo_l     : crear_propiedad_switch("Mostrar Brazo L MOCAP")
+    influencia_brazo_l   : crear_propiedad_sliders( "Influencia Brazo L MOCAP")
     
     #Mano L
-    mostrar_mano_l       : crear_propiedad_switch("Mostrar Mano L IPI")
-    influencia_mano_l    : crear_propiedad_sliders( "Influencia Mano L IPI")
+    mostrar_mano_l       : crear_propiedad_switch("Mostrar Mano L MOCAP")
+    influencia_mano_l    : crear_propiedad_sliders( "Influencia Mano L MOCAP")
     
     #brazo R
-    mostrar_brazo_r      : crear_propiedad_switch("Mostrar Brazo R IPI")
-    influencia_brazo_r   : crear_propiedad_sliders( "Influencia Brazo R IPI")
+    mostrar_brazo_r      : crear_propiedad_switch("Mostrar Brazo R MOCAP")
+    influencia_brazo_r   : crear_propiedad_sliders( "Influencia Brazo R MOCAP")
     
     #Mano R
-    mostrar_mano_r       : crear_propiedad_switch("Mostrar Mano R IPI")
-    influencia_mano_r    : crear_propiedad_sliders( "Influencia Mano R IPI")
+    mostrar_mano_r       : crear_propiedad_switch("Mostrar Mano R MOCAP")
+    influencia_mano_r    : crear_propiedad_sliders( "Influencia Mano R MOCAP")
     
     #Pierna L
-    mostrar_pierna_l      : crear_propiedad_switch("Mostrar pierna L IPI")
-    influencia_pierna_l   : crear_propiedad_sliders( "Influencia Brazo L IPI")
+    mostrar_pierna_l      : crear_propiedad_switch("Mostrar pierna L MOCAP")
+    influencia_pierna_l   : crear_propiedad_sliders( "Influencia Brazo L MOCAP")
     
     #Pierna L
-    mostrar_pie_l      : crear_propiedad_switch("Mostrar Pie L IPI")
-    influencia_pie_l   : crear_propiedad_sliders( "Influencia Pie L IPI")
+    mostrar_pie_l      : crear_propiedad_switch("Mostrar Pie L MOCAP")
+    influencia_pie_l   : crear_propiedad_sliders( "Influencia Pie L MOCAP")
     
     #Pierna r
-    mostrar_pierna_r      : crear_propiedad_switch("Mostrar pierna R IPI")
-    influencia_pierna_r   : crear_propiedad_sliders( "Influencia Brazo R IPI")
+    mostrar_pierna_r      : crear_propiedad_switch("Mostrar pierna R MOCAP")
+    influencia_pierna_r   : crear_propiedad_sliders( "Influencia Brazo R MOCAP")
     
     #Pierna r
-    mostrar_pie_r      : crear_propiedad_switch("Mostrar Pie R IPI")
-    influencia_pie_r   : crear_propiedad_sliders( "Influencia Pie R IPI")
+    mostrar_pie_r      : crear_propiedad_switch("Mostrar Pie R MOCAP")
+    influencia_pie_r   : crear_propiedad_sliders( "Influencia Pie R MOCAP")
 
     pass
 
@@ -626,7 +626,7 @@ class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
     df_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_DF_PROPIEDADES)
     fk_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_FK_PROPIEDADES)
     ik_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IK_PROPIEDADES)
-    ipi_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IPI_PROPIEDADES)
+    MOCAP_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_MOCAP_PROPIEDADES)
     hueso       : bpy.props.PointerProperty(type = ARMATURE_NOMENCLATURA_DF)
     pass
 
@@ -2203,19 +2203,19 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
 #################################################################################
 #                    Sistema de generacion mocap
  
-# sistema IPI: Operador reservado para la generación del sistema retargeting de iPi Mocap
-class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator): 
+# sistema MOCAP: Operador reservado para la generación del sistema retargeting de MOCAP Mocap
+class OBJECT_OT_Generar_sistema_MOCAP(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
-    bl_idname = "object.generar_ipi" 
-    bl_label = "Generar IPI" 
+    bl_idname = "object.generar_mocap" 
+    bl_label = "Generar MOCAP" 
     bl_options = {'REGISTER', 'UNDO'} 
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
         armature  = context.object.data
         mocap     = armature.control_rig
-        combinar  = mocap.crear_prop.combinar_IPI 
+        combinar  = mocap.crear_prop.combinar_MOCAP 
         
         if mocap.crear_prop.MOCAP_creado:
             self.report({"INFO"},"Sistema MOCAP creado")
@@ -2234,25 +2234,25 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         
         bpy.ops.object.duplicate(linked=False)
         
-        IPI_esqueleto = bpy.context.active_object
+        MOCAP_esqueleto = bpy.context.active_object
         #FK_esqueleto.location.x += 1
-        IPI_esqueleto.name = "MOCAP"
+        MOCAP_esqueleto.name = "MOCAP"
         
                 
-        if IPI_esqueleto.data and IPI_esqueleto.data.animation_data and IPI_esqueleto.data.animation_data.drivers:
-            for fcurve in list(IPI_esqueleto.data.animation_data.drivers):
-                IPI_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
+        if MOCAP_esqueleto.data and MOCAP_esqueleto.data.animation_data and MOCAP_esqueleto.data.animation_data.drivers:
+            for fcurve in list(MOCAP_esqueleto.data.animation_data.drivers):
+                MOCAP_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
                 
                 
                 
         bpy.ops.object.mode_set(mode='EDIT')
         
         # borra todo los huesos que no sean deformacion                     
-        borrar_huesos_prefijo(IPI_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
+        borrar_huesos_prefijo(MOCAP_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
 
-        renombrar_prefijo_huesos(IPI_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_IPI)
+        renombrar_prefijo_huesos(MOCAP_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_MOCAP)
                                 
-        cambiar_color_huesos(IPI_esqueleto,PREFIJO_HUESOS_IPI,
+        cambiar_color_huesos(MOCAP_esqueleto,PREFIJO_HUESOS_MOCAP,
                             (0,0.8,0.8),   # celeste
                             (1.0,0.0,0.0), # rojo
                             (1.0,1.0,0.0)  # amarillo
@@ -2260,38 +2260,38 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         
         #limpieza 
         bpy.ops.object.mode_set(mode='POSE')
-        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_FK)
-        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_IK)
-        eliminar_todo_constraints(self,IPI_esqueleto,PREFIJO_HUESOS_IPI)
+        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_FK)
+        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_IK)
+        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_MOCAP)
         
-        eliminar_drivers_rotos_esqueleto(IPI_esqueleto)
+        eliminar_drivers_rotos_esqueleto(MOCAP_esqueleto)
         
-        for bone in IPI_esqueleto.data.bones:
-           if bone.name.startswith( PREFIJO_HUESOS_IPI):
+        for bone in MOCAP_esqueleto.data.bones:
+           if bone.name.startswith( PREFIJO_HUESOS_MOCAP):
                bone.hide_select = False
                pass
         
         borrar_ik = False
         
-        if not len(IPI_esqueleto.data.bones) == 0 :
-            data_path = "control_rig.ipi_prop."
+        if not len(MOCAP_esqueleto.data.bones) == 0 :
+            data_path = "control_rig.MOCAP_prop."
             
             
             if version_blender >= blender_5:
-                for bone in IPI_esqueleto.pose.bones:
+                for bone in MOCAP_esqueleto.pose.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
                         
-                        if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
+                        if bone.name.startswith(PREFIJO_HUESOS_MOCAP+prefijo):
                             bone.rotation_mode = 'XYZ'
                             vincular_driver(propiedad,bone,data_path,armature)
             
             elif version_blender >= blender_3:
                 
-                for bone in IPI_esqueleto.data.bones:
+                for bone in MOCAP_esqueleto.data.bones:
                     for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                        if bone.name.startswith(PREFIJO_HUESOS_IPI+prefijo):
+                        if bone.name.startswith(PREFIJO_HUESOS_MOCAP+prefijo):
                             vincular_driver(propiedad,bone,data_path,armature)
-                for bone in IPI_esqueleto.pose.bones:
+                for bone in MOCAP_esqueleto.pose.bones:
                     bone.rotation_mode = 'XYZ'
                     pass      
                         
@@ -2306,9 +2306,9 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
                     
                     if bone.name.startswith(df_prefijo):
                         constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
-                        constraint_hueso.name = "IPI_ROTATION"
-                        constraint_hueso.target = IPI_esqueleto
-                        constraint_hueso.subtarget = PREFIJO_HUESOS_IPI + bone.name[3:]
+                        constraint_hueso.name = "MOCAP_ROTATION"
+                        constraint_hueso.target = MOCAP_esqueleto
+                        constraint_hueso.subtarget = PREFIJO_HUESOS_MOCAP + bone.name[3:]
                         constraint_hueso.target_space = "LOCAL"
                         constraint_hueso.owner_space = "LOCAL"
                         constraint_hueso.mix_mode = "ADD" 
@@ -2330,12 +2330,12 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = IPI_esqueleto
+            bpy.context.view_layer.objects.active = MOCAP_esqueleto
             bpy.ops.object.mode_set(mode='EDIT')
             
-            for bone in IPI_esqueleto.data.edit_bones:
+            for bone in MOCAP_esqueleto.data.edit_bones:
                 #self.report({"INFO"},f"{bone.name}")
-                for nuevo_nombre , nombre_to_comprobar in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+                for nuevo_nombre , nombre_to_comprobar in MAPEO_MOCAP_ESQUELETO_SISTEMA_MOCAP.items():
                 
                     if bone.name == nombre_to_comprobar:
                         bone.name = nuevo_nombre
@@ -2345,8 +2345,8 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
             # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
 
             bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.context.view_layer.objects.active = IPI_esqueleto
-            IPI_esqueleto.select_set(True)
+            bpy.context.view_layer.objects.active = MOCAP_esqueleto
+            MOCAP_esqueleto.select_set(True)
             bpy.ops.object.delete(use_global=False)
             bpy.ops.object.select_all(action='DESELECT')
             bpy.context.view_layer.objects.active = DF_ESQUELETO
@@ -2358,7 +2358,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
             if not borrar_ik:
                 bpy.ops.object.mode_set(mode='OBJECT')
                 
-                fk_join = bpy.data.objects.get(IPI_esqueleto.name)
+                fk_join = bpy.data.objects.get(MOCAP_esqueleto.name)
                 df_join = bpy.data.objects.get(DF_ESQUELETO.name)
                 
                 df_join.select_set(True)
@@ -2376,7 +2376,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
             bpy.context.view_layer.objects.active = DF_ESQUELETO
             DF_ESQUELETO.select_set(True)
             
-            self.report({"INFO"},"Se combino el esqueleto IPI con el esqueleto DF")
+            self.report({"INFO"},"Se combino el esqueleto MOCAP con el esqueleto DF")
             pass
         return {'FINISHED'}  
 
@@ -2422,18 +2422,18 @@ class OBJECT_OT_SELECIONAR_IK(bpy.types.Operator):
         selecionar_huesos(esqueleto,PREFIJO_HUESOS_IK)
         return {'FINISHED'}  
     
-# selecionar ipi: Operador para seleccionar los elementos del sistema IPI Mocap
-class OBJECT_OT_SELECIONAR_IPI(bpy.types.Operator): 
+# selecionar MOCAP: Operador para seleccionar los elementos del sistema MOCAP Mocap
+class OBJECT_OT_SELECIONAR_MOCAP(bpy.types.Operator): 
     """Crea al esqueleto selecionado su sistema de control FK"""
     
-    bl_idname = "object.selecionar_ipi" 
-    bl_label = "Seleciona sistema IPI" 
+    bl_idname = "object.selecionar_mocap" 
+    bl_label = "Seleciona sistema MOCAP" 
     bl_options = {'REGISTER', 'UNDO'} 
     
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
         esqueleto = bpy.context.object
-        selecionar_huesos(esqueleto,PREFIJO_HUESOS_IPI)
+        selecionar_huesos(esqueleto,PREFIJO_HUESOS_MOCAP)
         return {'FINISHED'}  
  
  
@@ -2586,14 +2586,14 @@ class OBJECT_OT_ELIMINAR_IK(bpy.types.Operator):
         return {'FINISHED'}
     
 #################################################################################
-#                            Borra sistema IPI
+#                            Borra sistema MOCAP
 ######################################################################################
 
-class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator): 
-    """Borra la vinculacion con el sistema IPI"""
+class OBJECT_OT_ELIMINAR_MOCAP(bpy.types.Operator): 
+    """Borra la vinculacion con el sistema MOCAP"""
     
-    bl_idname = "object.eliminar_ipi"
-    bl_label = "ELIMINA EL SISTEMA IPI" 
+    bl_idname = "object.eliminar_mocap"
+    bl_label = "ELIMINA EL SISTEMA MOCAP" 
     bl_options = {'REGISTER', 'UNDO'} 
     
     # Código Python que se ejecuta al presionar el botton
@@ -2605,12 +2605,12 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
         bpy.ops.armature.select_all(action='DESELECT')
         esqueleto = obj
         obj.data.control_rig.crear_prop.MOCAP_creado = False
-        borrar_huesos_prefijo(esqueleto,PREFIJO_HUESOS_IPI)
+        borrar_huesos_prefijo(esqueleto,PREFIJO_HUESOS_MOCAP)
       
         #borrado de constraints         
         bpy.ops.object.mode_set(mode='POSE') 
         
-        NOMBRE_CONSTRAINT = "IPI_ROTATION"
+        NOMBRE_CONSTRAINT = "MOCAP_ROTATION"
         esqueleto = context.object
         eliminar_constraint(NOMBRE_CONSTRAINT,esqueleto,PREFIJO_HUESOS_DEFORMACION)
         
@@ -2810,8 +2810,8 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         
         
         fila_3 = box_crear.row(align=True)
-        fila_3.prop(general_prop, "combinar_IPI", toggle=True)
-        fila_3.operator("object.generar_ipi",icon="BONE_DATA")
+        fila_3.prop(general_prop, "combinar_mocap", toggle=True)
+        fila_3.operator("object.generar_mocap",icon="BONE_DATA")
 
 
 
@@ -3083,12 +3083,12 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
 
 
 ######################################################################
-#              menu desplegable de control IPI MOCAP
+#              menu desplegable de control MOCAP MOCAP
 ######################################################################
-# menu de control ipi
-class DATA_PT_UI_Control_IPI(bpy.types.Panel):
+# menu de control MOCAP
+class DATA_PT_UI_Control_MOCAP(bpy.types.Panel):
     
-    bl_label = "Sistema de control IPI"
+    bl_label = "Sistema de control MOCAP"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"  # Apunta a la pestaña Data
@@ -3101,11 +3101,11 @@ class DATA_PT_UI_Control_IPI(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        armature = context.active_object.data.control_rig.ipi_prop
+        armature = context.active_object.data.control_rig.MOCAP_prop
         
         # control general
         box_general = layout.box()
-        box_general.label(text="Sistema de control IPI")
+        box_general.label(text="Sistema de control MOCAP")
         box_general.prop(armature,"mostrar",toggle=True)
         box_general.prop(armature,"influencia_maestra",slider=True)
         layout.separator()
@@ -3214,7 +3214,7 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         DF  = context.active_object.data.control_rig.df_prop
         FK  = context.active_object.data.control_rig.fk_prop
         IK  = context.active_object.data.control_rig.ik_prop
-        IPI = context.active_object.data.control_rig.ipi_prop
+        MOCAP = context.active_object.data.control_rig.MOCAP_prop
         
         
         box_general = layout.box()
@@ -3228,14 +3228,14 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         row = box_general.row()
         row.prop(IK,"mostrar",toggle=True)
         row.prop(IK,"mostrar_controles",toggle=True)
-        box_general.prop(IPI,"mostrar",toggle=True) 
+        box_general.prop(MOCAP,"mostrar",toggle=True) 
                
                
         influencia = layout.box()
         influencia.label(text = "Control maestro influencia")
         influencia.prop(FK,"influencia_maestra")
         influencia.prop(IK,"influencia_maestra")
-        influencia.prop(IPI,"influencia_maestra")
+        influencia.prop(MOCAP,"influencia_maestra")
         
         
 
@@ -3274,14 +3274,14 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
         Selecionar.label(text="Selecionar sistma")
         Selecionar.operator("object.selecionar_fk")
         Selecionar.operator("object.selecionar_ik")
-        Selecionar.operator("object.selecionar_ipi")
+        Selecionar.operator("object.selecionar_MOCAP")
         Selecionar.separator()
         
         Eliminar_sistema = layout.box()
         Eliminar_sistema.label(text = "Eliminar sistema")
         Eliminar_sistema.operator("object.eliminar_fk")
         Eliminar_sistema.operator("object.eliminar_ik")
-        Eliminar_sistema.operator("object.eliminar_ipi")
+        Eliminar_sistema.operator("object.eliminar_MOCAP")
        
 
 ###########################################################
@@ -3298,7 +3298,7 @@ classes = [
     ARMATURE_SISTEMA_DF_PROPIEDADES,
     ARMATURE_SISTEMA_FK_PROPIEDADES,
     ARMATURE_SISTEMA_IK_PROPIEDADES,
-    ARMATURE_SISTEMA_IPI_PROPIEDADES,
+    ARMATURE_SISTEMA_MOCAP_PROPIEDADES,
     ARMATURE_NOMENCLATURA_DF,
     ARMATURE_CONTROLADOR_PROPIEDADES,
     
@@ -3307,10 +3307,10 @@ classes = [
     
     OBJECT_OT_Generar_sistema_FK,
     OBJECT_OT_Generar_sistema_IK,
-    OBJECT_OT_Generar_sistema_IPI,
+    OBJECT_OT_Generar_sistema_MOCAP,
     
     OBJECT_OT_SELECIONAR_FK,
-    OBJECT_OT_SELECIONAR_IPI,
+    OBJECT_OT_SELECIONAR_MOCAP,
     OBJECT_OT_SELECIONAR_IK,
     
     OBJECT_OT_SELECIONAR_FIJADORES,
@@ -3320,7 +3320,7 @@ classes = [
     
     OBJECT_OT_ELIMINAR_FK,
     OBJECT_OT_ELIMINAR_IK,
-    OBJECT_OT_ELIMINAR_IPI,
+    OBJECT_OT_ELIMINAR_MOCAP,
     OBJECT_OT_ELIMINAR_DRIVERS_DF,
     
     
@@ -3329,7 +3329,7 @@ classes = [
     DATA_PT_UI_Control_SISTEMAS,
     DATA_PT_UI_Control_FK,
     DATA_PT_UI_Control_IK,
-    DATA_PT_UI_Control_IPI,
+    DATA_PT_UI_Control_MOCAP,
     DATA_PT_UI_SELECIONAR_SISTEMA,
     OBJECT_TO_configurar_desformadores,
     
