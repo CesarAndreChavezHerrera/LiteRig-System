@@ -580,10 +580,17 @@ class ARMATURE_SISTEMA_IK_PROPIEDADES(bpy.types.PropertyGroup):
 # propiedades MOCAP: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
 class ARMATURE_SISTEMA_MOCAP_PROPIEDADES(bpy.types.PropertyGroup):
     
-    tipo_mocap          : bpy.props.EnumProperty(
-                        name    = "Origen",
+    tipo_mocap     : bpy.props.EnumProperty(
+                        name    = "Tipo",
                         items   = OPCIONES_MOCAP,
-                        default = opcion_mocap_0[0])
+                        default = opcion_mocap_0[0]
+                        )
+                        
+    from_armature  : bpy.props.PointerProperty(
+                        type=bpy.types.Object,
+                        name="Mocap",
+                        description="Selecciona la armadura que contiene el mocap"
+                    )
 
     mostrar             : crear_propiedad_switch("Mostrar MOCAP",
                             update= Actualizar_mostrar)
@@ -1019,7 +1026,15 @@ def add_contraints_influencia(
                     armature,
                     "influencia_maestra",
                     "influence", "")
-    pass 
+    pass
+
+ 
+def add_constraints(
+                   
+                    ):
+
+    pass
+
 
 # añadir constraint y vincular esquelets con el deformador
 def vincular_esqueletos(
@@ -2293,12 +2308,79 @@ class OBJECT_OT_Generar_sistema_MOCAP(bpy.types.Operator):
         return {'FINISHED'}
 
 
+#################################################################################
+#                            conectar mocap
+
+class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator): 
+    """Borra la vinculacion con el sistema MOCAP"""
+    
+    bl_idname = "object.conectar_mocap"
+    bl_label = "Conecta " 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        obj = context.object
+        esqueleto = obj
+        mocap_prop = obj.data.control_rig.mocap_prop
+        
+        tipo_mocap   = mocap_prop.tipo_mocap     #tipo de captura de movimiento
+        target_mocap = mocap_prop.from_armature  #la armatura que tiene la captura de movimiento
+        
+        
+        
+        if not obj.data.control_rig.crear_prop.MOCAP_creado:
+            self.report({"INFO"},"Sistema de control mocap no existe")
+            return {'FINISHED'}
+            pass
+        
+        if target_mocap == None:
+            self.report({"INFO"},"el target de captura de movimiento no existe")
+            return {'FINISHED'}
+            pass 
+        
+        
+        #selectionar huesos del esqueleto de mocap:
+        for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+            
+            bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+            if bone:
+                #self.report({"INFO"},f"{bone.name}")
+                constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                constraint_hueso.target        = target_mocap
+                constraint_hueso.subtarget     = ipi_bone
+                constraint_hueso.mix_mode      = "ADD"
+                constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                constraint_hueso.owner_space  = "LOCAL" 
+                pass
+            
+            pass
+        
+        
+        
+        self.report({"INFO"},f"{tipo_mocap} {target_mocap}")
+        return {'FINISHED'}
 
 
+#################################################################################
+#                            transferir mocap
 
-
-
-
+class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator): 
+    """transfiere la animacion del esqueleto de origen al control"""
+    
+    bl_idname = "object.transferir_mocap"
+    bl_label = "Transferir " 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        obj = context.object
+        mocap_prop = obj.data.control_rig.mocap_prop
+        
+        self.report({"INFO"},"aun no esta listo")
+        return {'FINISHED'}
 
 
 ##############################################################
@@ -3173,7 +3255,13 @@ class DATA_PT_UI_PROCESAMIENTO_MOCAP(bpy.types.Panel):
         box_general = layout.box()
         row1 = box_general.row()
         
-        row1.prop(MOCAP,"tipo_mocap")    
+        row1.prop(MOCAP,"tipo_mocap")
+        row1.prop(MOCAP,"from_armature")
+        
+        row2 = box_general.row()
+        row2.operator("object.conectar_mocap")
+        row2.operator("object.transferir_mocap")
+         
 
 ######################################################################
 #         menu desplegable de control en modo editicion
@@ -3246,6 +3334,8 @@ classes = [
     OBJECT_OT_SELECIONAR_FK,
     OBJECT_OT_SELECIONAR_MOCAP,
     OBJECT_OT_SELECIONAR_IK,
+    OBJECT_OT_CONECTAR_MOCAP,
+    OBJECT_OT_TRANSFER_MOCAP,
     
     OBJECT_OT_SELECIONAR_FIJADORES,
     OBJECT_OT_SELECIONAR_DEFORMADORES,
