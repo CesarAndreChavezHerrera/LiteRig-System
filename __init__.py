@@ -9,7 +9,7 @@ bl_info = {
     "name": "LiteRig SYSTEM",
     "author": "cesar andre chavez herrera",
     "version": (1, 0, 1),
-    "blender": (5, 0, 0),
+    "blender": (3, 6, 0),
     "location": "Properties > Data (Armature)",
     "description": "Creacion de un rigging simple para animaciones low poly",
     "category": "Rigging",
