@@ -41,6 +41,11 @@ COLOR_IK_CONTROL = [
                     (0.0,1.0,1.0), # celeste
                     (0.0,1.0,0.0)  # verde 
                     ]
+COLOR_MOCAP = [
+            (0.0,1.0,1.0), # celeste
+            (0.0,0.7,0.0), # verde 
+            (1.0,1.0,0.0)  # blanco 
+            ]
 
 # LISTA DE PREFIJOS 
 
@@ -626,7 +631,7 @@ class ARMATURE_CONTROLADOR_PROPIEDADES(bpy.types.PropertyGroup):
     df_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_DF_PROPIEDADES)
     fk_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_FK_PROPIEDADES)
     ik_prop     : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_IK_PROPIEDADES)
-    MOCAP_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_MOCAP_PROPIEDADES)
+    mocap_prop    : bpy.props.PointerProperty(type = ARMATURE_SISTEMA_MOCAP_PROPIEDADES)
     hueso       : bpy.props.PointerProperty(type = ARMATURE_NOMENCLATURA_DF)
     pass
 
@@ -2214,171 +2219,52 @@ class OBJECT_OT_Generar_sistema_MOCAP(bpy.types.Operator):
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
         armature  = context.object.data
-        mocap     = armature.control_rig
-        combinar  = mocap.crear_prop.combinar_MOCAP 
+        mocap        = armature.control_rig
+        combinar  = mocap.crear_prop.combinar_FK 
         
         if mocap.crear_prop.MOCAP_creado:
-            self.report({"INFO"},"Sistema MOCAP creado")
-            return {"FINISHED"}
+            self.report({"INFO"},"Sistema mocap Ya existe")
+            return {'FINISHED'}
             pass
-        mocap.crear_prop.MOCAP_creado = True
-         
-        bpy.ops.object.mode_set(mode='OBJECT')
-        DF_ESQUELETO = bpy.context.active_object
-        bpy.ops.object.select_all(action='DESELECT')
+        # duplicar esqueleto
+        mocap_esqueleto, DF_ESQUELETO = pre_configurar_esqueleto(self,PREFIJO_HUESOS_MOCAP,COLOR_MOCAP)
         
-        #selecionamos el esqueleto base 
-        DF_SELECTION  = bpy.data.objects.get(DF_ESQUELETO.name)
-        bpy.context.view_layer.objects.active = DF_SELECTION
-        DF_SELECTION.select_set(True)
+        borrar = False
         
-        bpy.ops.object.duplicate(linked=False)
-        
-        MOCAP_esqueleto = bpy.context.active_object
-        #FK_esqueleto.location.x += 1
-        MOCAP_esqueleto.name = "MOCAP"
-        
-                
-        if MOCAP_esqueleto.data and MOCAP_esqueleto.data.animation_data and MOCAP_esqueleto.data.animation_data.drivers:
-            for fcurve in list(MOCAP_esqueleto.data.animation_data.drivers):
-                MOCAP_esqueleto.data.driver_remove(fcurve.data_path, fcurve.array_index)
-                
-                
-                
-        bpy.ops.object.mode_set(mode='EDIT')
-        
-        # borra todo los huesos que no sean deformacion                     
-        borrar_huesos_prefijo(MOCAP_esqueleto,PREFIJO_HUESOS_DEFORMACION,True) 
-
-        renombrar_prefijo_huesos(MOCAP_esqueleto,PREFIJO_HUESOS_DEFORMACION,PREFIJO_HUESOS_MOCAP)
+        if not len(mocap_esqueleto.data.bones) == 0 :
+            mocap.crear_prop.MOCAP_creado = True
+            data_path = "control_rig.mocap_prop."
+            
+            propiedad_mostrar_zona(mocap_esqueleto,armature,PREFIJO_HUESOS_MOCAP,data_path)            
+            
+            vincular_esqueletos(mocap_esqueleto,
+                                DF_ESQUELETO,
+                                armature,
+                                PREFIJO_HUESOS_MOCAP,
+                                data_path,
+                                "MOCAP_ROTATION",
+                                "COPY_TRANSFORMS"
+                                )
                                 
-        cambiar_color_huesos(MOCAP_esqueleto,PREFIJO_HUESOS_MOCAP,
-                            (0,0.8,0.8),   # celeste
-                            (1.0,0.0,0.0), # rojo
-                            (1.0,1.0,0.0)  # amarillo
-                            )
-        
-        #limpieza 
-        bpy.ops.object.mode_set(mode='POSE')
-        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_FK)
-        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_IK)
-        eliminar_todo_constraints(self,MOCAP_esqueleto,PREFIJO_HUESOS_MOCAP)
-        
-        eliminar_drivers_rotos_esqueleto(MOCAP_esqueleto)
-        
-        for bone in MOCAP_esqueleto.data.bones:
-           if bone.name.startswith( PREFIJO_HUESOS_MOCAP):
-               bone.hide_select = False
-               pass
-        
-        borrar_ik = False
-        
-        if not len(MOCAP_esqueleto.data.bones) == 0 :
-            data_path = "control_rig.MOCAP_prop."
-            
-            
-            if version_blender >= blender_5:
-                for bone in MOCAP_esqueleto.pose.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                        
-                        if bone.name.startswith(PREFIJO_HUESOS_MOCAP+prefijo):
-                            bone.rotation_mode = 'XYZ'
-                            vincular_driver(propiedad,bone,data_path,armature)
-            
-            elif version_blender >= blender_3:
-                
-                for bone in MOCAP_esqueleto.data.bones:
-                    for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_MOSTRAR.items():
-                        if bone.name.startswith(PREFIJO_HUESOS_MOCAP+prefijo):
-                            vincular_driver(propiedad,bone,data_path,armature)
-                for bone in MOCAP_esqueleto.pose.bones:
-                    bone.rotation_mode = 'XYZ'
-                    pass      
-                        
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            bpy.ops.object.mode_set(mode='POSE')
-            
-            for bone in DF_ESQUELETO.pose.bones:
-                for prefijo, propiedad in MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA.items():
-                    df_prefijo = PREFIJO_HUESOS_DEFORMACION+prefijo
-                    
-                    if bone.name.startswith(df_prefijo):
-                        constraint_hueso = bone.constraints.new(type = "COPY_ROTATION")
-                        constraint_hueso.name = "MOCAP_ROTATION"
-                        constraint_hueso.target = MOCAP_esqueleto
-                        constraint_hueso.subtarget = PREFIJO_HUESOS_MOCAP + bone.name[3:]
-                        constraint_hueso.target_space = "LOCAL"
-                        constraint_hueso.owner_space = "LOCAL"
-                        constraint_hueso.mix_mode = "ADD" 
-                        
-                        
-                        vincular_driver(propiedad,
-                                            constraint_hueso,
-                                            data_path,armature,
-                                            "influencia_maestra",
-                                            "influence","")
-                        
-                        pass
-                    pass
-
-                pass
-            context.object.update_tag(refresh={'DATA'})
-            ############################################################
-            #                     ACTUALIZAR nombre
-            
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = MOCAP_esqueleto
-            bpy.ops.object.mode_set(mode='EDIT')
-            
-            for bone in MOCAP_esqueleto.data.edit_bones:
-                #self.report({"INFO"},f"{bone.name}")
-                for nuevo_nombre , nombre_to_comprobar in MAPEO_MOCAP_ESQUELETO_SISTEMA_MOCAP.items():
-                
-                    if bone.name == nombre_to_comprobar:
-                        bone.name = nuevo_nombre
-                  
-            
         else:
             # Si no hay huesos generados, elimina la copia vacía y vuelve a seleccionar el original
+            eliminar_esqueleto_vacio(DF_ESQUELETO,mocap_esqueleto)
+            borrar = True
 
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.context.view_layer.objects.active = MOCAP_esqueleto
-            MOCAP_esqueleto.select_set(True)
-            bpy.ops.object.delete(use_global=False)
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            DF_ESQUELETO.select_set(True)
-            borrar_ik = True
-        
-        
         if combinar:
-            if not borrar_ik:
-                bpy.ops.object.mode_set(mode='OBJECT')
+            if not borrar:
                 
-                fk_join = bpy.data.objects.get(MOCAP_esqueleto.name)
-                df_join = bpy.data.objects.get(DF_ESQUELETO.name)
-                
-                df_join.select_set(True)
-                fk_join.select_set(True)
-                
-                bpy.context.view_layer.objects.active = df_join
-                bpy.ops.object.join()
+                combinar_esqueleto(DF_ESQUELETO,mocap_esqueleto)
             else:
-                self.report({"INFO"},"Sistema IK No creado")
+                mocap.crear_prop.MOCAP_creado = False
+                self.report({"INFO"},"Sistema FK mocap creado")
         
         else:
-            
-            bpy.ops.object.mode_set(mode='OBJECT')
-            bpy.ops.object.select_all(action='DESELECT')
-            bpy.context.view_layer.objects.active = DF_ESQUELETO
-            DF_ESQUELETO.select_set(True)
-            
-            self.report({"INFO"},"Se combino el esqueleto MOCAP con el esqueleto DF")
+            no_combinar_esqueleto(DF_ESQUELETO)
+            self.report({"INFO"},"Se creo el sistema mocap")
             pass
-        return {'FINISHED'}  
+    
+        return {'FINISHED'}
 
 
 
@@ -2810,7 +2696,7 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         
         
         fila_3 = box_crear.row(align=True)
-        fila_3.prop(general_prop, "combinar_mocap", toggle=True)
+        fila_3.prop(general_prop, "combinar_MOCAP", toggle=True)
         fila_3.operator("object.generar_mocap",icon="BONE_DATA")
 
 
@@ -3101,7 +2987,7 @@ class DATA_PT_UI_Control_MOCAP(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        armature = context.active_object.data.control_rig.MOCAP_prop
+        armature = context.active_object.data.control_rig.mocap_prop
         
         # control general
         box_general = layout.box()
@@ -3214,7 +3100,7 @@ class DATA_PT_UI_Control_SISTEMAS(bpy.types.Panel):
         DF  = context.active_object.data.control_rig.df_prop
         FK  = context.active_object.data.control_rig.fk_prop
         IK  = context.active_object.data.control_rig.ik_prop
-        MOCAP = context.active_object.data.control_rig.MOCAP_prop
+        MOCAP = context.active_object.data.control_rig.mocap_prop
         
         
         box_general = layout.box()
@@ -3274,14 +3160,14 @@ class DATA_PT_UI_SELECIONAR_SISTEMA(bpy.types.Panel):
         Selecionar.label(text="Selecionar sistma")
         Selecionar.operator("object.selecionar_fk")
         Selecionar.operator("object.selecionar_ik")
-        Selecionar.operator("object.selecionar_MOCAP")
+        Selecionar.operator("object.selecionar_mocap")
         Selecionar.separator()
         
         Eliminar_sistema = layout.box()
         Eliminar_sistema.label(text = "Eliminar sistema")
         Eliminar_sistema.operator("object.eliminar_fk")
         Eliminar_sistema.operator("object.eliminar_ik")
-        Eliminar_sistema.operator("object.eliminar_MOCAP")
+        Eliminar_sistema.operator("object.eliminar_mocap")
        
 
 ###########################################################
