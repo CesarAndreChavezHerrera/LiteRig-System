@@ -2352,7 +2352,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                 constraint_hueso.subtarget     = ipi_bone
                 constraint_hueso.mix_mode      = "ADD"
                 constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
-                constraint_hueso.owner_space  = "LOCAL" 
+                constraint_hueso.owner_space   = "LOCAL" 
                 pass
             
             pass
@@ -2370,7 +2370,7 @@ class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator):
     """transfiere la animacion del esqueleto de origen al control"""
     
     bl_idname = "object.transferir_mocap"
-    bl_label = "Transferir " 
+    bl_label = "Tansferir" 
     bl_options = {'REGISTER', 'UNDO'} 
     
     # Código Python que se ejecuta al presionar el botton
@@ -2380,6 +2380,26 @@ class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator):
         mocap_prop = obj.data.control_rig.mocap_prop
         
         self.report({"INFO"},"aun no esta listo")
+        return {'FINISHED'}
+
+
+#################################################################################
+#                    Reset mocap
+
+class OBJECT_OT_RESET_MOCAP(bpy.types.Operator): 
+    """borra la configuracion de conection con el esqueleto objetivo """
+    
+    bl_idname = "object.reset_mocap"
+    bl_label = "Clear mocap target" 
+    bl_options = {'REGISTER', 'UNDO'} 
+    
+    # Código Python que se ejecuta al presionar el botton
+    def execute(self, context): 
+        
+        obj = context.object
+        
+        
+        eliminar_constraint("Copy Rotation",obj,PREFIJO_HUESOS_MOCAP)
         return {'FINISHED'}
 
 
@@ -3261,7 +3281,8 @@ class DATA_PT_UI_PROCESAMIENTO_MOCAP(bpy.types.Panel):
         row2 = box_general.row()
         row2.operator("object.conectar_mocap")
         row2.operator("object.transferir_mocap")
-         
+        row3 = box_general.row()
+        row3.operator("object.reset_mocap")
 
 ######################################################################
 #         menu desplegable de control en modo editicion
@@ -3336,6 +3357,7 @@ classes = [
     OBJECT_OT_SELECIONAR_IK,
     OBJECT_OT_CONECTAR_MOCAP,
     OBJECT_OT_TRANSFER_MOCAP,
+    OBJECT_OT_RESET_MOCAP,
     
     OBJECT_OT_SELECIONAR_FIJADORES,
     OBJECT_OT_SELECIONAR_DEFORMADORES,
