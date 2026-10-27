@@ -6,13 +6,13 @@
 
 # Información del Add-on registrada en Blender (metadatos principales)
 bl_info = {
-    "name": "LiteRig system",
-    "author": "Cesar Chavez",
-    "version": (1, 0, 0),
-    "blender": (3, 6, 0), 
-    "location": "View3D > propertier > Data", # Dónde lo encuentra el usuario
-    "description": "Armature",
-    "category": "3D View", # Categoría en las preferencias
+    "name": "LiteRig SYSTEM",
+    "author": "cesar andre chavez herrera",
+    "version": (1, 0, 1),
+    "blender": (5, 0, 0),
+    "location": "Properties > Data (Armature)",
+    "description": "Creacion de un rigging simple para animaciones low poly",
+    "category": "Rigging",
 }
 
 import bpy
