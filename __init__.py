@@ -372,25 +372,11 @@ class ARMATURE_GENERAL_PROPIEDADES(bpy.types.PropertyGroup):
             "Muestra si el esqueleto ya tiene su sistema FK creado",
             False)
             
-    IPI_creado :  crear_propiedad_switch( 
-            "IPI",
+    MOCAP_creado :  crear_propiedad_switch( 
+            "Mocap",
             "Muestra si el esqueleto ya tiene su sistema IK creado",
             False)
     
-    IPI_creado :  crear_propiedad_switch( 
-            "IPI",
-            "Muestra si el esqueleto ya tiene su sistema IPI creado",
-            False)
-    
-    FreeMoCap_creado :  crear_propiedad_switch( 
-            "FMC",
-            "Muestra si el esqueleto ya tiene su sistema FreeMocap creado",
-            False)
-            
-    MIXAMO_creado :  crear_propiedad_switch( 
-            "MXM",
-            "Muestra si el esqueleto ya tiene su sistema Mixamo creado",
-            False)
     pass
 
 
@@ -2215,7 +2201,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
     
 
 #################################################################################
-#                    Sistema de generacion IPI
+#                    Sistema de generacion mocap
  
 # sistema IPI: Operador reservado para la generación del sistema retargeting de iPi Mocap
 class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator): 
@@ -2228,10 +2214,14 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
     # Código Python que se ejecuta al presionar el botton
     def execute(self, context): 
         armature  = context.object.data
-        fk        = armature.control_rig
-        combinar  = fk.crear_prop.combinar_IPI 
+        mocap     = armature.control_rig
+        combinar  = mocap.crear_prop.combinar_IPI 
         
-        
+        if mocap.crear_prop.MOCAP_creado:
+            self.report({"INFO"},"Sistema MOCAP creado")
+            return {"FINISHED"}
+            pass
+        mocap.crear_prop.MOCAP_creado = True
          
         bpy.ops.object.mode_set(mode='OBJECT')
         DF_ESQUELETO = bpy.context.active_object
@@ -2246,7 +2236,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         
         IPI_esqueleto = bpy.context.active_object
         #FK_esqueleto.location.x += 1
-        IPI_esqueleto.name = "IPI"
+        IPI_esqueleto.name = "MOCAP"
         
                 
         if IPI_esqueleto.data and IPI_esqueleto.data.animation_data and IPI_esqueleto.data.animation_data.drivers:
@@ -2277,7 +2267,7 @@ class OBJECT_OT_Generar_sistema_IPI(bpy.types.Operator):
         eliminar_drivers_rotos_esqueleto(IPI_esqueleto)
         
         for bone in IPI_esqueleto.data.bones:
-           if bone.name.startswith( PREFIJO_HUESOS_FK):
+           if bone.name.startswith( PREFIJO_HUESOS_IPI):
                bone.hide_select = False
                pass
         
@@ -2614,6 +2604,7 @@ class OBJECT_OT_ELIMINAR_IPI(bpy.types.Operator):
         # eliminar huesos que no se necesita
         bpy.ops.armature.select_all(action='DESELECT')
         esqueleto = obj
+        obj.data.control_rig.crear_prop.MOCAP_creado = False
         borrar_huesos_prefijo(esqueleto,PREFIJO_HUESOS_IPI)
       
         #borrado de constraints         
@@ -2802,12 +2793,7 @@ class DATA_PT_UI_CREATE_ARMATURE(bpy.types.Panel):
         status_bar.enabled = False
         status_bar.prop(general_prop,"FK_creado")
         status_bar.prop(general_prop,"IK_creado")
-        
-        status_bar1 = status.row(align=True)
-        status_bar1.enabled = False
-        status_bar1.prop(general_prop,"IPI_creado")
-        status_bar1.prop(general_prop,"FreeMoCap_creado")
-        status_bar1.prop(general_prop,"MIXAMO_creado")
+        status_bar.prop(general_prop,"MOCAP_creado")
         
         box_crear = layout.box()
         box_crear.label(text= "Generar sistemas de control",icon="ARMATURE_DATA") 
