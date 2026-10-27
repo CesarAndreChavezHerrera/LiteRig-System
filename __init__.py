@@ -8,7 +8,7 @@
 bl_info = {
     "name": "LiteRig SYSTEM",
     "author": "cesar andre chavez herrera",
-    "version": (1, 0, 1),
+    "version": (1, 0, 2),
     "blender": (3, 6, 0),
     "location": "Properties > Data (Armature)",
     "description": "Creacion de un rigging simple para animaciones low poly",
@@ -43,7 +43,7 @@ COLOR_IK_CONTROL = [
                     ]
 COLOR_MOCAP = [
             (0.0,1.0,1.0), # celeste
-            (0.0,0.7,0.0), # verde 
+            (1.0,1.0,1.0), # verde 
             (1.0,1.0,0.0)  # blanco 
             ]
 
@@ -2340,26 +2340,27 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
             return {'FINISHED'}
             pass 
         
-        
-        #selectionar huesos del esqueleto de mocap:
-        for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
-            
-            bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
-            if bone:
-                #self.report({"INFO"},f"{bone.name}")
-                constraint_hueso        = bone.constraints.new("COPY_ROTATION")
-                constraint_hueso.target        = target_mocap
-                constraint_hueso.subtarget     = ipi_bone
-                constraint_hueso.mix_mode      = "ADD"
-                constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
-                constraint_hueso.owner_space   = "LOCAL" 
+        # retargeting de ipi mocap
+        if tipo == opcion_mocap_0[0]:
+            #selectionar huesos del esqueleto de mocap:
+            for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+                
+                bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+                if bone:
+                    #self.report({"INFO"},f"{bone.name}")
+                    constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                    constraint_hueso.target        = target_mocap
+                    constraint_hueso.subtarget     = ipi_bone
+                    constraint_hueso.mix_mode      = "ADD"
+                    constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                    constraint_hueso.owner_space   = "LOCAL" 
+                    pass
+                
                 pass
-            
-            pass
         
         
         
-        self.report({"INFO"},f"{tipo_mocap} {target_mocap}")
+        
         return {'FINISHED'}
 
 
@@ -2377,10 +2378,33 @@ class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator):
     def execute(self, context): 
         
         obj = context.object
+        esqueleto = obj
         mocap_prop = obj.data.control_rig.mocap_prop
         
+        tipo_mocap   = mocap_prop.tipo_mocap     #tipo de captura de movimiento
+        target_mocap = mocap_prop.from_armature  #la armatura que tiene la captura de movimiento
+        
+        
+        
+        if not obj.data.control_rig.crear_prop.MOCAP_creado:
+            self.report({"INFO"},"Sistema de control mocap no existe")
+            return {'FINISHED'}
+            pass
+        
+        if target_mocap == None:
+            self.report({"INFO"},"el target de captura de movimiento no existe")
+            return {'FINISHED'}
+            pass 
+        
+        #selectionar
+        for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+            bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+            if bone:
+                bone.select = True
+                pass
+        bpy.ops.nla.bake('INVOKE_DEFAULT')    
         self.report({"INFO"},"aun no esta listo")
-        return {'FINISHED'}
+        return {'FINISHED'} 
 
 
 #################################################################################
