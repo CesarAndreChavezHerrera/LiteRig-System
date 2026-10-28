@@ -2412,14 +2412,6 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
-                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
-                        constraint_hueso        = bone.constraints.new("COPY_LOCATION")
-                        constraint_hueso.name          = contraint_location_name
-                        constraint_hueso.target        = target_mocap
-                        constraint_hueso.subtarget     = ipi_bone
-                        constraint_hueso.use_offset    = True
-                        constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
-                        constraint_hueso.owner_space   = "LOCAL" 
                     #self.report({"INFO"},f"{bone.name}")
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
                     constraint_hueso.name          = contraint_rotation_name
@@ -2469,14 +2461,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
-                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
-                        constraint_hueso        = bone.constraints.new("COPY_LOCATION")
-                        constraint_hueso.name          = contraint_location_name
-                        constraint_hueso.target        = target_mocap
-                        constraint_hueso.subtarget     = ipi_bone
-                        constraint_hueso.use_offset    = True
-                        constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
-                        constraint_hueso.owner_space   = "LOCAL" 
+   
                     #self.report({"INFO"},f"{bone.name}")
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
                     constraint_hueso.name          = contraint_rotation_name
@@ -2891,7 +2876,9 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"  # Apunta a la pestaña Data
-        
+    bl_options = {'DEFAULT_CLOSED'}    
+    
+    
     @classmethod
     def poll(cls,context):
         obj = context.object
@@ -2902,6 +2889,9 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         armature = context.object.data
         huesos = armature.control_rig.hueso
         
+        layout.label(text="We are working on, its not ready")
+        layout.label(text="you will enable your own bones name")
+        """
         box_cabeza = layout.box()
         box_cabeza.label(text="head bones", icon= "BONE_DATA")
         box_cabeza.prop(huesos,"cabeza")
@@ -2930,7 +2920,7 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         box_hand.prop(huesos, "dedo_medio")
         box_hand.prop(huesos, "dedo_anular")
         box_hand.prop(huesos, "dedo_pulgar")
-        
+        """
                 
     pass
 
@@ -3007,6 +2997,7 @@ class DATA_PT_UI_Control_FK(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"  # Apunta a la pestaña Data
+    bl_options = {'DEFAULT_CLOSED'}
     
     @classmethod
     def poll(cls,context):
@@ -3133,7 +3124,8 @@ class DATA_PT_UI_Control_IK(bpy.types.Panel):
     bl_label = "Sistema de control IK"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = "data"  # Apunta a la pestaña Data
+    bl_context = "data"  
+    bl_options = {'DEFAULT_CLOSED'}
     
     @classmethod
     def poll(cls,context):
@@ -3267,8 +3259,8 @@ class DATA_PT_UI_Control_MOCAP(bpy.types.Panel):
     bl_label = "Sistema de control MOCAP"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = "data"  # Apunta a la pestaña Data
-    
+    bl_context = "data"
+    bl_options = {'DEFAULT_CLOSED'}
     @classmethod
     def poll(cls,context):
         return context.object is not None and context.object.type == "ARMATURE" and context.mode == 'POSE'
