@@ -254,12 +254,36 @@ MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
     
 }
 
+# PARA FREEMOCAP HAY QUE APLICAR LA ROTACION
+MAPEO_FREEMOCAP_ESQUELETO_SISTEMA_MOCAP = {
+
+    "neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
+    
+    "pelvis"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
+    "spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
+    "spine2"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
+
+    "upper_arm.L" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO     + L,
+    "forearm.L"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO + L,
+
+    "upper_arm.R" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO     + R,
+    "forearm.R"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO + R,
+    
+    "thigh.R"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
+    "shin.R"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R,
+
+    "thigh.L"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
+    "shin.L"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L,
+
+
+}
+
 
 # PARA MIXAMO HAY QUE APLICAR LA ROTACION
 MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP = {
 
-    "mixamorig:Neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
-    "mixamorig:Head"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
+    "mixamorig:Head"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
+    "mixamorig:Neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
 
     "mixamorig:Hips"    : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
     "mixamorig:Spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
@@ -2378,6 +2402,8 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
             return {'FINISHED'}
             pass 
         
+        contraint_rotation_name = "MOCAP_ROTATION"
+        contraint_location_name = "MOCAP_LOCATION"
         # retargeting de ipi mocap
         if tipo_mocap == opcion_mocap_0[0]:
             #selectionar huesos del esqueleto de mocap:
@@ -2386,8 +2412,17 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
+                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
+                        constraint_hueso        = bone.constraints.new("COPY_LOCATION")
+                        constraint_hueso.name          = contraint_location_name
+                        constraint_hueso.target        = target_mocap
+                        constraint_hueso.subtarget     = ipi_bone
+                        constraint_hueso.use_offset    = True
+                        constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                        constraint_hueso.owner_space   = "LOCAL" 
                     #self.report({"INFO"},f"{bone.name}")
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                    constraint_hueso.name          = contraint_rotation_name
                     constraint_hueso.target        = target_mocap
                     constraint_hueso.subtarget     = ipi_bone
                     constraint_hueso.mix_mode      = "ADD"
@@ -2396,16 +2431,27 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                     pass
                 
                 pass
-                # retargeting de ipi mocap
-        if tipo_mocap == opcion_mocap_2[0]:
+            
+        # retargeting de mixamo mocap
+        elif tipo_mocap == opcion_mocap_1[0]:
             #selectionar huesos del esqueleto de mocap:
-            for ipi_bone, bone_owner in MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP.items():
+            for ipi_bone, bone_owner in MAPEO_FREEMOCAP_ESQUELETO_SISTEMA_MOCAP.items():
                 
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
+                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
+                        constraint_hueso        = bone.constraints.new("COPY_LOCATION")
+                        constraint_hueso.name          = contraint_location_name
+                        constraint_hueso.target        = target_mocap
+                        constraint_hueso.subtarget     = ipi_bone
+                        constraint_hueso.use_offset    = True
+                        constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                        constraint_hueso.owner_space   = "LOCAL" 
+                        
                     #self.report({"INFO"},f"{bone.name}")
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                    constraint_hueso.name          = contraint_rotation_name
                     constraint_hueso.target        = target_mocap
                     constraint_hueso.subtarget     = ipi_bone
                     constraint_hueso.mix_mode      = "ADD"
@@ -2415,6 +2461,35 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                 
                 pass
         
+        # retargeting de mixamo mocap
+        elif tipo_mocap == opcion_mocap_2[0]:
+            #selectionar huesos del esqueleto de mocap:
+            for ipi_bone, bone_owner in MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP.items():
+                
+                self.report({"INFO"},f"{bone_owner}")
+                bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+                if bone:
+                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
+                        constraint_hueso        = bone.constraints.new("COPY_LOCATION")
+                        constraint_hueso.name          = contraint_location_name
+                        constraint_hueso.target        = target_mocap
+                        constraint_hueso.subtarget     = ipi_bone
+                        constraint_hueso.use_offset    = True
+                        constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                        constraint_hueso.owner_space   = "LOCAL" 
+                    #self.report({"INFO"},f"{bone.name}")
+                    constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                    constraint_hueso.name          = contraint_rotation_name
+                    constraint_hueso.target        = target_mocap
+                    constraint_hueso.subtarget     = ipi_bone
+                    constraint_hueso.mix_mode      = "ADD"
+                    constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                    constraint_hueso.owner_space   = "LOCAL" 
+                    pass
+                
+                pass
+        else:
+            self.report({"INFO"},f"Este sistema aun no esta listo para retargeting {tipo_mocap}")
         
         
         
@@ -2460,7 +2535,7 @@ class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator):
                 bone.select = True
                 pass
         bpy.ops.nla.bake('INVOKE_DEFAULT')    
-        self.report({"INFO"},"aun no esta listo")
+        #self.report({"INFO"},"aun no esta listo")
         return {'FINISHED'} 
 
 
@@ -2480,7 +2555,13 @@ class OBJECT_OT_RESET_MOCAP(bpy.types.Operator):
         obj = context.object
         
         
-        eliminar_constraint("Copy Rotation",obj,PREFIJO_HUESOS_MOCAP)
+        eliminar_constraint("MOCAP_ROTATION",obj,PREFIJO_HUESOS_MOCAP)
+        eliminar_constraint("MOCAP_LOCATION",obj,PREFIJO_HUESOS_MOCAP)
+        bpy.ops.pose.select_all(action='SELECT')
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.loc_clear()
+        bpy.ops.pose.select_all(action='DESELECT')
+
         return {'FINISHED'}
 
 
