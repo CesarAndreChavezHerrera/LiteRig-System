@@ -85,15 +85,18 @@ ZONA_PIE_R    = "PIE_R."
 PROP_MOSTRAR    = "mostrar_"
 PROP_INFLUENCIA = "influencia_"
 
-
 # listado de huesos
+R = ".R"
+L = ".L"
 
 HUESO_CABEZA = "cabeza"
 HUESO_CUELLO = "cuello"
 
-HUESO_PECHO          = "espalda"
+HUESO_PECHO          = "espalda.4"
 HUESO_PELVIS_CENTRAL = "espalda"
 HUESO_ESPALDA        = "espalda"
+HUESO_ESPALDA_1      = "espalda.1"
+HUESO_ESPALDA_2      = "espalda.3"
 
 HUESO_HOMBRO        = "hombro"
 HUESO_BRAZO         = "brazo"
@@ -125,6 +128,8 @@ MAPEO_NOMENCLATURA_DF_CENTRAL = {
     HUESO_PECHO          : ZONA_ESPALDA,
     HUESO_PELVIS_CENTRAL : ZONA_ESPALDA,
     HUESO_ESPALDA        : ZONA_ESPALDA,
+    HUESO_ESPALDA_1      : ZONA_ESPALDA,
+    HUESO_ESPALDA_2      : ZONA_ESPALDA,
     }
 
 
@@ -219,37 +224,70 @@ MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA = {
 }
 
 MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
-    "Head"  : "MOCAP.CABEZA.cabeza",
-    "Neck"  : "MOCAP.CABEZA.cuello",
+    "Head"  : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
+    "Neck"  : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
     
-    "Chest"        : "MOCAP.ESPALDA.espalda.4",
-    "MiddleSpine"  : "MOCAP.ESPALDA.espalda.3",
-    "LowerSpine"   : "MOCAP.ESPALDA.espalda.1",
-    "Hip"          : "MOCAP.ESPALDA.espalda",
+    "Hip"          : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
+    "LowerSpine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
+    "MiddleSpine"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_2,
+    "Chest"        : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
     
-    "LThigh"      : "MOCAP.PIERNA_L.pierna.L",
-    "LShin"       : "MOCAP.PIERNA_L.antepierna.L",
-    "LFoot"       : "MOCAP.PIE_L.pie.L",
-    "LToe"       : "MOCAP.PIE_L.dedos.L",
+    "LThigh"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
+    "LShin"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L, 
+    "LFoot"       : PREFIJO_HUESOS_MOCAP +  ZONA_PIE_L    + HUESO_PIE        + L,
+    "LToe"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L   + HUESO_DEDO_PIE   + L,
     
-    "LClavicle"  : "MOCAP.BRAZO_L.hombro.L",
-    "LShoulder"  : "MOCAP.BRAZO_L.brazo.L",
-    "LForearm"   : "MOCAP.BRAZO_L.antebrazo.L",
-    "LHand"      : "MOCAP.MANO_L.mano.L",
+    "LClavicle"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_HOMBRO      + L,
+    "LShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO       + L,
+    "LForearm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO   + L,
+    "LHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + HUESO_MANO        + L,
     
-    "RThigh"      : "MOCAP.PIERNA_R.pierna.R",
-    "RShin"       : "MOCAP.PIERNA_R.antepierna.R",
-    "RFoot"       : "MOCAP.PIE_R.pie.R",
-    "RToe"        : "MOCAP.PIE_R.dedos.R",
+    "RThigh"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
+    "RShin"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R, 
+    "RFoot"       : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_PIE        + R,
+    "RToe"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_DEDO_PIE   + R,
     
-    "RClavicle"  : "MOCAP.BRAZO_R.hombro.R",
-    "RShoulder"  : "MOCAP.BRAZO_R.brazo.R",
-    "RForearm"   : "MOCAP.BRAZO_R.antebrazo.R",
-    "RHand"      : "MOCAP.MANO_R.mano.R",
+    "RClavicle"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_HOMBRO       + R,
+    "RShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO        + R,
+    "RForearm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO    + R,
+    "RHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R  + HUESO_MANO         + R,
     
+}
+
+
+# PARA MIXAMO HAY QUE APLICAR LA ROTACION
+MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP = {
+
+    "mixamorig:Neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
+    "mixamorig:Head"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
+
+    "mixamorig:Hips"    : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
+    "mixamorig:Spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
+    "mixamorig:Spine1"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_2,
+    "mixamorig:Spine2"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
+
+    "mixamorig:LeftShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_HOMBRO    + L,
+    "mixamorig:LeftArm"       : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO     + L,
+    "mixamorig:LeftForeArm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO + L,
+    "mixamorig:LeftHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + HUESO_MANO      + L,
+
+    "mixamorig:RightShoulder" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_HOMBRO    + R,
+    "mixamorig:RightArm"      : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO     + R,
+    "mixamorig:RightForeArm"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO + R,
+    "mixamorig:RightHand"     : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R  + HUESO_MANO      + R,
     
+    "mixamorig:RightUpLeg"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
+    "mixamorig:RightLeg"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R,
+    "mixamorig:RightFoot"     : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_PIE        + R,
+    "mixamorig:RightToeBase"  : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_DEDO_PIE   + R,
+    
+    "mixamorig:LeftUpLeg"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
+    "mixamorig:LeftLeg"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L,
+    "mixamorig:LeftFoot"      : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + HUESO_PIE        + L,
+    "mixamorig:LeftToeBase"   : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + HUESO_DEDO_PIE   + L,
 
 }
+
 
 opcion_mocap_0 = ["opcion_ipi_mocap"     ,"IPI MOCAP"]
 opcion_mocap_1 = ["opcion_freemocap"     ,"FreeMocap"]
@@ -423,8 +461,8 @@ class ARMATURE_NOMENCLATURA_DF(bpy.types.PropertyGroup):
     cuello         : crear_propiedad_texto("Neck",HUESO_CUELLO)
     
     pecho          : crear_propiedad_texto("Chest",HUESO_PECHO)
-    espalda_media  : crear_propiedad_texto("Middle Spine",HUESO_ESPALDA)
-    espalda_baja   : crear_propiedad_texto("Lower Spine",HUESO_ESPALDA)
+    espalda_media  : crear_propiedad_texto("Middle Spine",HUESO_ESPALDA_2)
+    espalda_baja   : crear_propiedad_texto("Lower Spine",HUESO_ESPALDA_1)
     pelvis_central : crear_propiedad_texto("Hip",HUESO_PELVIS_CENTRAL)
     
     hombro         : crear_propiedad_texto("Clavicle",HUESO_HOMBRO)
@@ -2345,6 +2383,25 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
             #selectionar huesos del esqueleto de mocap:
             for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
                 
+                self.report({"INFO"},f"{bone_owner}")
+                bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+                if bone:
+                    #self.report({"INFO"},f"{bone.name}")
+                    constraint_hueso        = bone.constraints.new("COPY_ROTATION")
+                    constraint_hueso.target        = target_mocap
+                    constraint_hueso.subtarget     = ipi_bone
+                    constraint_hueso.mix_mode      = "ADD"
+                    constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
+                    constraint_hueso.owner_space   = "LOCAL" 
+                    pass
+                
+                pass
+                # retargeting de ipi mocap
+        if tipo_mocap == opcion_mocap_2[0]:
+            #selectionar huesos del esqueleto de mocap:
+            for ipi_bone, bone_owner in MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP.items():
+                
+                self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
                     #self.report({"INFO"},f"{bone.name}")
