@@ -2341,7 +2341,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
             pass 
         
         # retargeting de ipi mocap
-        if tipo == opcion_mocap_0[0]:
+        if tipo_mocap == opcion_mocap_0[0]:
             #selectionar huesos del esqueleto de mocap:
             for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
                 
