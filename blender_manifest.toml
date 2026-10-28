@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "liteRig_System"
-version = "1.0.0"
+version = "1.0.1"
 name = "liteRig System"
 tagline = "lite Rig for low poly character and tools to mix mocap"
 maintainer = "Cesar Chavez cchavez@ugb.edu.sv"
