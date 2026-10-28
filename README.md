@@ -1,20 +1,18 @@
 # LiteRig System
 
-Este add-on para Blender esté diseñado para la creación de rigging personalizado en modelos de cuerpo **Low Poly y Medium Poly**. Genera un sistema de controles FK e IK simple, además de incluir una base de controles faciales pensada principalmente para trabajar con **shape keys.**
-
-Asimismo, se esté trabajando en la integración de sistemas de control para animaciones provenientes de captura de movimiento **(mocap)**.
+Este add-on para Blender esté diseñado para la creación de rigging personalizado en modelos de cuerpo **Low Poly y Medium Poly**. Genera un sistema de controles FK e IK simple y ademas de eso  integración de sistemas de control para animaciones provenientes de captura de movimiento **(mocap)** con un sistema de retargeting integrado.
 
 
 ## Compatibilidad con sistemas de captura de movimiento
 
 | Sistema de Mocap                  | Progreso | Estado |
 | :--- | :---: | :---: |
-| **iPi Motion Capture**            | 70%   | En desarrollo |
-| **Mixamo**                        | 0%    | Proximamente |
-| **FreeMoCap**                     | 0%    | Proximamente |
-| **Rokoko**                        | 0%    | Por evaluar |
-| **Plask.ai**                      | 0%    | Por evaluar |
-| **DeepMotion**                    | 0%    | Por evaluar |
+| **iPi Motion Capture**            | 100 %   | bvh |
+| **Mixamo**                        | 95 %    | FBX 7.4 y aplicar rotación |
+| **FreeMoCap**                     | 90 %    | FBX y bhv  |
+| **Rokoko**                        | 0%    | Proximamente |
+| **Plask.ai**                      | 0%    | Proximamente |
+| **DeepMotion**                    | 0%    | Proximamente |
 | **Xsens Animate**                 | 0%    | Por evaluar |
 | **Seguimiento Inercial Gen?rico** | 0%    | Por evaluar |
 
@@ -78,7 +76,7 @@ Siempre se comenzara escribiendo el prefijo que define que tipo de hueso es el q
 | `FK.`         | Controles de **Forward Kinematics** |
 | `IK.`         | Controles y estructuras de **Inverse Kinematics** |
 | `IK.CONTROL.` | Controles principales para el sistema IK |
-| `IPI.`        | Huesos/Objetivos para integración con iPi MoCap |
+| `MOCAP.`        | Huesos/Objetivos para integración de MoCap |
 
 
 
