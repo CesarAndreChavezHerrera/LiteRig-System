@@ -229,94 +229,7 @@ MAPEO_NOMBRE_HUESOS_PROPIEDAD_INFLUENCIA = {
 
 }
 
-MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP = {
-    "Head"  : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
-    "Neck"  : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
-    
-    "Hip"          : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
-    "LowerSpine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
-    "MiddleSpine"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_2,
-    "Chest"        : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
-    
-    "LThigh"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
-    "LShin"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L, 
-    "LFoot"       : PREFIJO_HUESOS_MOCAP +  ZONA_PIE_L    + HUESO_PIE        + L,
-    "LToe"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L   + HUESO_DEDO_PIE   + L,
-    
-    "LClavicle"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_HOMBRO      + L,
-    "LShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO       + L,
-    "LForearm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO   + L,
-    "LHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + HUESO_MANO        + L,
-    
-    "RThigh"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
-    "RShin"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R, 
-    "RFoot"       : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_PIE        + R,
-    "RToe"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_DEDO_PIE   + R,
-    
-    "RClavicle"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_HOMBRO       + R,
-    "RShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO        + R,
-    "RForearm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO    + R,
-    "RHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R  + HUESO_MANO         + R,
-    
-}
 
-# PARA FREEMOCAP HAY QUE APLICAR LA ROTACION
-MAPEO_FREEMOCAP_ESQUELETO_SISTEMA_MOCAP = {
-
-    "neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
-    
-    "pelvis"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
-    "spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
-    "spine2"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
-
-    "upper_arm.L" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO     + L,
-    "forearm.L"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO + L,
-
-    "upper_arm.R" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO     + R,
-    "forearm.R"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO + R,
-    
-    "thigh.R"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
-    "shin.R"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R,
-
-    "thigh.L"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
-    "shin.L"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L,
-
-
-}
-
-
-# PARA MIXAMO HAY QUE APLICAR LA ROTACION
-MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP = {
-
-    "mixamorig:Head"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CABEZA,
-    "mixamorig:Neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + HUESO_CUELLO,
-
-    "mixamorig:Hips"    : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL,
-    "mixamorig:Spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_1,
-    "mixamorig:Spine1"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_ESPALDA_2,
-    "mixamorig:Spine2"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PECHO,
-
-    "mixamorig:LeftShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_HOMBRO    + L,
-    "mixamorig:LeftArm"       : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_BRAZO     + L,
-    "mixamorig:LeftForeArm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + HUESO_ANTEBRAZO + L,
-    "mixamorig:LeftHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + HUESO_MANO      + L,
-
-    "mixamorig:RightShoulder" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_HOMBRO    + R,
-    "mixamorig:RightArm"      : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_BRAZO     + R,
-    "mixamorig:RightForeArm"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + HUESO_ANTEBRAZO + R,
-    "mixamorig:RightHand"     : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R  + HUESO_MANO      + R,
-    
-    "mixamorig:RightUpLeg"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_PIERNA     + R,
-    "mixamorig:RightLeg"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + HUESO_ANTEPIERNA + R,
-    "mixamorig:RightFoot"     : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_PIE        + R,
-    "mixamorig:RightToeBase"  : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + HUESO_DEDO_PIE   + R,
-    
-    "mixamorig:LeftUpLeg"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_PIERNA     + L,
-    "mixamorig:LeftLeg"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + HUESO_ANTEPIERNA + L,
-    "mixamorig:LeftFoot"      : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + HUESO_PIE        + L,
-    "mixamorig:LeftToeBase"   : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + HUESO_DEDO_PIE   + L,
-
-}
 
 
 opcion_mocap_0 = ["opcion_ipi_mocap"     ,"IPI MOCAP"]
@@ -1484,19 +1397,78 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
             # 1- busca el hueso de control del sistema
             # 2- vincular la propiedad de local del hueso a respectiva propiedad de influencia
             # 3- añadir un limite de "y" 0 y 1 bloqueando todas la demas
-            control_sistema_nombre = PREFIJO_HUESO_CONTROL+PREFIJO_HUESOS_FK[:-1] 
-            control_sistema = buscar_hueso_especifico_pose(DF_SELECTION,control_sistema_nombre)
             
-            if not control_sistema == None:
-                #data_path = "control_rig.fk_prop.influencia_maestra"
-                #driver = DF_SELECTION.driver_add(data_path).driver
-                #driver.type = "SCRIPTED"
-                
-                self.report({"INFO"},"hueso encontrado")
-                
+            
+            control_sistema_nombre_fk    = PREFIJO_HUESO_CONTROL + PREFIJO_HUESOS_FK    [:-1]
+            control_sistema_nombre_ik    = PREFIJO_HUESO_CONTROL + PREFIJO_HUESOS_IK    [:-1]
+            control_sistema_nombre_mocap = PREFIJO_HUESO_CONTROL + PREFIJO_HUESOS_MOCAP [:-1]
+            
+            
+            
+            control_sistema_fk    = buscar_hueso_especifico_pose(DF_SELECTION,control_sistema_nombre_fk)
+            control_sistema_ik    = buscar_hueso_especifico_pose(DF_SELECTION,control_sistema_nombre_ik)
+            control_sistema_mocap = buscar_hueso_especifico_pose(DF_SELECTION,control_sistema_nombre_mocap)
+            
+            self.report({"INFO"},f"{control_sistema_fk}")
+            if not control_sistema_fk == None:        
+                data_path = "control_rig.fk_prop.influencia_maestra"
+                fcurve = DF_SELECTION.data.driver_add(data_path)
+                driver = fcurve.driver
+                driver.type = "SCRIPTED"
+                driver.expression = "var*2"
+                var = driver.variables.new()
+                var.name = "var"
+                var.type = 'TRANSFORMS'
+                var.targets[0].id = DF_ESQUELETO
+                var.targets[0].bone_target = control_sistema_fk.name
+                var.targets[0].transform_type = 'LOC_Y'
+                var.targets[0].transform_space = 'LOCAL_SPACE'
+                self.report({"INFO"},"hueso encontrado")    
                 pass
             else:
-                self.report({"INFO"},"hueso NO encontrado")
+                self.report({"INFO"},"hueso de control de sistema fk no encontrado") 
+            
+            if not control_sistema_ik == None:
+                
+                data_path = "control_rig.ik_prop.influencia_maestra"
+                fcurve = DF_SELECTION.data.driver_add(data_path)
+                driver = fcurve.driver
+                driver.type = "SCRIPTED"
+                driver.expression = "var*2"
+                var = driver.variables.new()
+                var.name = "var"
+                var.type = 'TRANSFORMS'
+                var.targets[0].id = DF_ESQUELETO
+                var.targets[0].bone_target = control_sistema_ik.name
+                var.targets[0].transform_type = 'LOC_Y'
+                var.targets[0].transform_space = 'LOCAL_SPACE'
+                self.report({"INFO"},"hueso encontrado")    
+                
+                pass 
+            else:
+                self.report({"INFO"},"hueso de control de sistema ik no encontrado")
+                
+            
+            
+            if not control_sistema_mocap == None:
+                                
+                data_path = "control_rig.mocap_prop.influencia_maestra"
+                fcurve = DF_SELECTION.data.driver_add(data_path)
+                driver = fcurve.driver
+                driver.type = "SCRIPTED"
+                driver.expression = "var*2"
+                var = driver.variables.new()
+                var.name = "var"
+                var.type = 'TRANSFORMS'
+                var.targets[0].id = DF_ESQUELETO
+                var.targets[0].bone_target = control_sistema_mocap.name
+                var.targets[0].transform_type = 'LOC_Y'
+                var.targets[0].transform_space = 'LOCAL_SPACE'
+                self.report({"INFO"},"hueso encontrado")  
+                pass
+            
+            else:
+                self.report({"INFO"},"hueso de control de sistema mocap no encontrado")
                 
             
             bpy.ops.object.mode_set(mode='OBJECT')
