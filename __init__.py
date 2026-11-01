@@ -418,6 +418,10 @@ def Actualizar_influencia(self,context):
     pass
 
 
+def actualizar_nomenclatura(self,context):
+    
+    
+    pass
 
 ######################################################
 #
@@ -508,7 +512,100 @@ class ARMATURE_NOMENCLATURA_DF(bpy.types.PropertyGroup):
     dedo_pulgar     : crear_propiedad_texto("Thumb Finger" ,HUESO_DEDO_PULGAR)
     
     
+    # mapeo dinamico de nomenclatura de huesos
+    
+    @property
+    def mapeo_ipi(self): # mapeo de de captura de movimiento de ipi mocap
+        return {
+            "Head"         : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA  + self.cabeza,
+            "Neck"         : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA  + self.cuello,
+            
+            "Chest"        : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pecho,
+            "MiddleSpine"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.espalda_media,
+            "LowerSpine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.espalda_baja,
+            "Hip"          : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pelvis_central,
+            
+            "LThigh"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.pierna     + L,
+            "LShin"        : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.antepierna + L, 
+            "LFoot"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + self.pie        + L,
+            "LToe"         : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + self.dedo_pie   + L,
+            
+            "LClavicle"    : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.hombro     + L,
+            "LShoulder"    : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.brazo      + L,
+            "LForearm"     : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.antebrazo  + L,
+            "LHand"        : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + self.mano       + L,
+            
+            "RThigh"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.pierna     + R,
+            "RShin"        : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.antepierna + R, 
+            "RFoot"        : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + self.pie        + R,
+            "RToe"         : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + self.dedo_pie   + R,
+            
+            "RClavicle"    : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.hombro     + R,
+            "RShoulder"    : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.brazo      + R,
+            "RForearm"     : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.antebrazo  + R,
+            "RHand"        : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R   + self.mano       + R,
+        }
+        pass
+    @property    
+    def mapeo_freemocap(self): # mapeo de de captura de movimiento de freemocap
+        return{
+
+            "neck"    : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA + self.cuello,
+            
+            "spine2"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pecho,
+            "spine"   : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.espalda_baja,
+            "pelvis"  : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pelvis_central,
+
+            "upper_arm.L" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.brazo     + L,
+            "forearm.L"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.antebrazo + L,
+
+            "upper_arm.R" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + self.brazo     + R,
+            "forearm.R"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R + self.antebrazo + R,
+            
+            "thigh.R"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.pierna     + R,
+            "shin.R"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.antepierna + R,
+
+            "thigh.L"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.pierna     + L,
+            "shin.L"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.antepierna + L,
+        }
+        pass
+    @property
+    def mapeo_mixamo(self): # mapeo de de captura de movimiento de mixamo
+        return {
+            "mixamorig:Head"          : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA  + self.cabeza,
+            "mixamorig:Neck"          : PREFIJO_HUESOS_MOCAP + ZONA_CABEZA  + self.cuello,
+
+            "mixamorig:Hips"          : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pelvis_central,
+            "mixamorig:Spine"         : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.espalda_baja,
+            "mixamorig:Spine1"        : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.espalda_media,
+            "mixamorig:Spine2"        : PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + self.pecho,
+
+            "mixamorig:LeftShoulder"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.hombro     + L,
+            "mixamorig:LeftArm"       : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.brazo      + L,
+            "mixamorig:LeftForeArm"   : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_L  + self.antebrazo  + L,
+            "mixamorig:LeftHand"      : PREFIJO_HUESOS_MOCAP + ZONA_MANO_L   + self.mano       + L,
+
+            "mixamorig:RightShoulder" : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.hombro     + R,
+            "mixamorig:RightArm"      : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.brazo      + R,
+            "mixamorig:RightForeArm"  : PREFIJO_HUESOS_MOCAP + ZONA_BRAZO_R  + self.antebrazo  + R,
+            "mixamorig:RightHand"     : PREFIJO_HUESOS_MOCAP + ZONA_MANO_R   + self.mano       + R,
+            
+            "mixamorig:RightUpLeg"    : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.pierna     + R,
+            "mixamorig:RightLeg"      : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_R + self.antepierna + R,
+            "mixamorig:RightFoot"     : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + self.pie        + R,
+            "mixamorig:RightToeBase"  : PREFIJO_HUESOS_MOCAP + ZONA_PIE_R    + self.dedo_pie   + R,
+            
+            "mixamorig:LeftUpLeg"     : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.pierna     + L,
+            "mixamorig:LeftLeg"       : PREFIJO_HUESOS_MOCAP + ZONA_PIERNA_L + self.antepierna + L,
+            "mixamorig:LeftFoot"      : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + self.pie        + L,
+            "mixamorig:LeftToeBase"   : PREFIJO_HUESOS_MOCAP + ZONA_PIE_L    + self.dedo_pie   + L,
+        }
+        pass    
+      
+     
+     
     pass
+
 ######################################################################################
 #                         PROPIEDADES ASOCIADA A FK
 # propiedades FK: Grupo de propiedades para visibilidad e influencia de cada zona anatómica
@@ -2891,7 +2988,7 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         
         layout.label(text="We are working on, its not ready")
         layout.label(text="you will enable your own bones name")
-        """
+        
         box_cabeza = layout.box()
         box_cabeza.label(text="head bones", icon= "BONE_DATA")
         box_cabeza.prop(huesos,"cabeza")
@@ -2920,14 +3017,48 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         box_hand.prop(huesos, "dedo_medio")
         box_hand.prop(huesos, "dedo_anular")
         box_hand.prop(huesos, "dedo_pulgar")
-        """
+        
                 
     pass
 
 
 
+########################################################################
+# prueba de configuacion
+
+class OBJECT_OT_PRUEBAS (bpy.types.Operator):
+    bl_idname = "object.pruebas"
+    bl_label = "probar nomenclatura "
 
 
+    def execute(self, context):
+        
+        # Lo que hace el botón al ser presionado
+        obj = context.object
+        huesos = obj.data.control_rig.hueso
+        
+        self.report({'INFO'},f"{huesos.cabeza}" )
+        self.report({'INFO'},f"{huesos.mapeo_ipi}" )
+        self.report({'INFO'},f"{huesos.mapeo_freemocap}" )
+        self.report({'INFO'},f"{huesos.mapeo_mixamo}" )
+        return {'FINISHED'}
+
+
+class VIEW_MT_pruebas_(bpy.types.Panel):
+    bt_idname="VIEW3D_PT_prueba"
+    bl_label = "pruebas"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Pruebas'
+    
+    
+    def draw(self, context):
+        
+        layout = self.layout
+        armature     = context.object
+        
+        layout.operator("object.pruebas")
+    pass
 
 
 ######################################################################
@@ -3534,6 +3665,9 @@ classes = [
     DATA_PT_UI_SELECIONAR_SISTEMA,
     OBJECT_TO_configurar_desformadores,
     
+    
+    OBJECT_OT_PRUEBAS,
+    VIEW_MT_pruebas_,
 ]
 
 
