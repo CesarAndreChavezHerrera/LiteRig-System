@@ -25,6 +25,12 @@ blender_5 = (5,0,0)
 blender_3 = (3,6,0)
 
 # COLORES
+COLOR_DF = [                            
+            (0.0,0.05,0.6),  # azul
+            (0.0,1.0,1.0),   # verde
+            (1.0,1.0,1.0)    # blanco
+            ]
+
 COLOR_FK = [
             (0,0.4,0.0),   # verde oscuro
             (1.0,0.0,0.0), # rojo
@@ -511,6 +517,69 @@ class ARMATURE_NOMENCLATURA_DF(bpy.types.PropertyGroup):
     dedo_mennique   : crear_propiedad_texto("Little Finger",HUESO_DEDO_MENNIQUE)
     dedo_pulgar     : crear_propiedad_texto("Thumb Finger" ,HUESO_DEDO_PULGAR)
     
+    
+    # mapeo de zonas de control 
+    
+    @property
+    def nomenclatura_df_central(self):
+        return{
+            self.cabeza : ZONA_CABEZA,
+            self.cuello : ZONA_CABEZA,
+            
+            self.pecho          : ZONA_ESPALDA,
+            self.espalda_media  : ZONA_ESPALDA,
+            self.espalda_baja   : ZONA_ESPALDA,
+            self.pelvis_central : ZONA_ESPALDA,
+    
+        }
+        pass
+    @property
+    def mapeo_nomenclatura_l(self):
+        return {
+            self.hombro     : ZONA_BRAZO_L,
+            self.brazo      : ZONA_BRAZO_L,
+            self.antebrazo  : ZONA_BRAZO_L,
+            
+            self.mano           : ZONA_MANO_L,
+            self.pre_dedo       : ZONA_MANO_L,
+            self.dedo_indice    : ZONA_MANO_L,
+            self.dedo_anular    : ZONA_MANO_L,
+            self.dedo_medio     : ZONA_MANO_L,
+            self.dedo_mennique  : ZONA_MANO_L,
+            self.dedo_pulgar    : ZONA_MANO_L,
+
+            self.pelvis     : ZONA_PIERNA_L,
+            self.pierna     : ZONA_PIERNA_L,
+            self.antepierna : ZONA_PIERNA_L,
+              
+            self.pie        : ZONA_PIE_L,  
+            self.dedo_pie   : ZONA_PIE_L
+        }
+        pass
+
+    @property
+    def mapeo_nomenclatura_r(self):
+        return {
+            self.hombro     : ZONA_BRAZO_R,
+            self.brazo      : ZONA_BRAZO_R,
+            self.antebrazo  : ZONA_BRAZO_R,
+            
+            self.mano           : ZONA_MANO_R,
+            self.pre_dedo       : ZONA_MANO_R,
+            self.dedo_indice    : ZONA_MANO_R,
+            self.dedo_anular    : ZONA_MANO_R,
+            self.dedo_medio     : ZONA_MANO_R,
+            self.dedo_mennique  : ZONA_MANO_R,
+            self.dedo_pulgar    : ZONA_MANO_R, 
+
+            self.pelvis     : ZONA_PIERNA_R,
+            self.pierna     : ZONA_PIERNA_R,
+            self.antepierna : ZONA_PIERNA_R,
+              
+            self.pie        : ZONA_PIE_R,  
+            self.dedo_pie   : ZONA_PIE_R
+        }
+        pass
     
     # mapeo dinamico de nomenclatura de huesos
     
@@ -1324,6 +1393,7 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
         
         self.report({"INFO"},f"{version_blender}")
         armature  = context.object.data
+        huesos = armature.control_rig.hueso
         
         bpy.ops.object.mode_set(mode='OBJECT')
         DF_ESQUELETO = bpy.context.active_object
@@ -1340,17 +1410,17 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
         for bone in DF_SELECTION.data.edit_bones:
             nombre_hueso = bone.name
             
-            for nombre, zona in  MAPEO_NOMENCLATURA_DF_CENTRAL.items():
+            for nombre, zona in  huesos.nomenclatura_df_central.items():
                 if nombre_hueso.startswith(nombre):
                     bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
                     break
                 pass
-            for nombre, zona in  MAPEO_NOMENCLATURA_DF_L.items():
+            for nombre, zona in  huesos.mapeo_nomenclatura_l.items():
                 if nombre_hueso.startswith(nombre) and nombre_hueso.endswith(".L"):
                     bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
                     break
                 pass
-            for nombre, zona in  MAPEO_NOMENCLATURA_DF_R.items():
+            for nombre, zona in  huesos.mapeo_nomenclatura_r.items():
                 if nombre_hueso.startswith(nombre) and nombre_hueso.endswith(".R"):
                     bone.name = PREFIJO_HUESOS_DEFORMACION + zona + nombre_hueso
                     break
@@ -1363,9 +1433,7 @@ class OBJECT_TO_configurar_desformadores(bpy.types.Operator):
         cambiar_color_huesos(
                             DF_ESQUELETO,
                             PREFIJO_HUESOS_DEFORMACION,
-                            (0.0,0.05,0.6),
-                            (0.0,1.0,1.0),
-                            (1.0,1.0,1.0))
+                            *COLOR_DF)
          
         bpy.ops.object.mode_set(mode='POSE')
         data_path = "control_rig.df_prop."
@@ -3001,6 +3069,13 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         box_espalda.prop(huesos, "espalda_baja")
         box_espalda.prop(huesos, "pelvis_central")
         
+        box_arm = layout.box()
+        box_arm.label(text = "Arm", icon= "BONE_DATA" )
+        box_arm.prop(huesos, "hombro")
+        box_arm.prop(huesos, "brazo")
+        box_arm.prop(huesos, "antebrazo")
+
+        
         box_leg = layout.box()
         box_leg.label(text = "Leg", icon= "BONE_DATA" )
         box_leg.prop(huesos, "pelvis")
@@ -3008,6 +3083,8 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         box_leg.prop(huesos, "antepierna")
         box_leg.prop(huesos, "pie")
         box_leg.prop(huesos, "dedo_pie")
+        
+        
         
         box_hand = layout.box()
         box_hand.label(text = "Hand", icon = "BONE_DATA")
