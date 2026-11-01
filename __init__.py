@@ -1025,7 +1025,7 @@ def duplicar_esqueleto(nomenclatura):
     
     duplicar_esqueleto = bpy.context.active_object
     duplicar_esqueleto.name = nomenclatura
-    
+    duplicar_esqueleto.animation_data_clear()
     return duplicar_esqueleto , DF_ESQUELETO
     pass
 
