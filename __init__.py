@@ -8,7 +8,7 @@
 bl_info = {
     "name": "LiteRig SYSTEM",
     "author": "cesar andre chavez herrera",
-    "version": (1, 0, 2),
+    "version": (1, 0, 3),
     "blender": (3, 6, 0),
     "location": "Properties > Data (Armature)",
     "description": "Creacion de un rigging simple para animaciones low poly",
@@ -3063,8 +3063,8 @@ class DATA_PT_UI_NAME(bpy.types.Panel):
         armature = context.object.data
         huesos = armature.control_rig.hueso
         
-        layout.label(text="We are working on, its not ready")
-        layout.label(text="you will enable your own bones name")
+        #layout.label(text="We are working on, its not ready")
+        #layout.label(text="you will enable your own bones name")
         
         box_cabeza = layout.box()
         box_cabeza.label(text="head bones", icon= "BONE_DATA")
@@ -3752,8 +3752,8 @@ classes = [
     OBJECT_TO_configurar_desformadores,
     
     
-    OBJECT_OT_PRUEBAS,
-    VIEW_MT_pruebas_,
+    #OBJECT_OT_PRUEBAS,
+    #VIEW_MT_pruebas_,
 ]
 
 
