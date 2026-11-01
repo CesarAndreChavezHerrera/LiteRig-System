@@ -1599,14 +1599,15 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
         
         IK_esqueleto , DF_ESQUELETO = pre_configurar_esqueleto(self,PREFIJO_HUESOS_IK,COLOR_IK)
         
-        borrar_ik = False
         
+        #comprueba que no este vacio
+        borrar_ik = False
         if not len(IK_esqueleto.data.bones) == 0 :
             
             ik.crear_prop.IK_creado = True
+            
             data_path = "control_rig.ik_prop."
-            
-            
+
             propiedad_mostrar_zona(IK_esqueleto,armature,PREFIJO_HUESOS_IK,data_path)
             
             vincular_esqueletos(IK_esqueleto,
@@ -1615,6 +1616,8 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                 PREFIJO_HUESOS_IK,
                                 data_path,
                                 "IK_ROTATION")
+            
+           
             
             espalda_deformador_nombre = PREFIJO_HUESOS_DEFORMACION + ZONA_ESPALDA + esqueleto_nomenclatura.pelvis_central
             #hueso_to_copy_nombre      = PREFIJO_HUESOS_IK          + ZONA_ESPALDA + "espalda"
@@ -1636,7 +1639,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                                         ) 
                 pass
             else:
-                self.report("Hueso base de la espalda no encontrado")
+                self.report({"INFO"}, f"bone hits don't fount {esqueleto_nomenclatura.pelvis_central}")
             
             ########################################################
             #creacion de sistema IK 
@@ -1656,16 +1659,21 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             #######################################################################
             # Cabezaaa
+            self.report({"INFO"},"Prueba de nomenclatura correcta con el sistema ik")
+            
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_cabeza_name = "IK.CABEZA.cabeza"                              # nombre del hueso de la cabeza
+            hueso_cabeza_name = PREFIJO_HUESOS_IK + ZONA_CABEZA + esqueleto_nomenclatura.cabeza # nombre del hueso de la cabeza
+            
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
+            
             hueso_cabeza = IK_esqueleto.data.edit_bones.get(hueso_cabeza_name) # busca el hueso de la cabeza
+            
             
             if not hueso_cabeza == None: # si encuentra el hueso 
                 
                 # duplica la cabeza 
-                control_cabeza = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+"cabeza")
+                control_cabeza = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+esqueleto_nomenclatura.cabeza)
 
                 mover_hueso         = Vector((0.0,-0.5,0.0))          # define cuanto se desplazara
                 control_cabeza.head = hueso_cabeza.head + mover_hueso # mueve la cabeza del hueso
@@ -1718,7 +1726,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 
                 
             else:
-                self.report({"INFO"},"Hueso de la cabeza no encontrado") 
+                self.report({"INFO"},f"bone head {esqueleto_nomenclatura.cabeza}") 
                 
             
             
@@ -1728,7 +1736,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             # Cadera 
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_objetivo_name = "IK.ESPALDA.espalda"                              # nombre del hueso de la cabeza
+            hueso_objetivo_name = PREFIJO_HUESOS_IK + ZONA_ESPALDA + esqueleto_nomenclatura.pelvis_central  # nombre del hueso de la cabeza
             hueso_ik_nombre     = "espalda"
             mover_hueso         = Vector((0.0,0.0,0.0))          # define cuanto se desplazara
             
@@ -1796,12 +1804,12 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             
             ##############################################################
-            # hombro   
+            # hombrod   
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_objetivo_name = "IK.ESPALDA.espalda.4"                              # nombre del hueso de la cabeza
-            hueso_ik_nombre     = "hombros"
+            hueso_objetivo_name = PREFIJO_HUESOS_IK + ZONA_ESPALDA + esqueleto_nomenclatura.pecho                              # nombre del hueso de la cabeza
+            hueso_ik_nombre     = esqueleto_nomenclatura.pecho
             mover_hueso         = Vector((0.0,0.0,0.0))          # define cuanto se desplazara
             
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)                 # des seleciona todos los huesos en modo edition
@@ -1876,13 +1884,13 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_mano_r_name = "IK.MANO_R.mano.R"                              # nombre del hueso de la cabeza
+            hueso_mano_r_name = PREFIJO_HUESOS_IK + ZONA_MANO_R + esqueleto_nomenclatura.mano + R # nombre del hueso de la cabeza
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
             hueso_mano_r = IK_esqueleto.data.edit_bones.get(hueso_mano_r_name)        # busca el hueso de la mano
             
             if not hueso_mano_r == None:
                 
-                ik_mano = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+"mano_R")
+                ik_mano = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+esqueleto_nomenclatura.mano + "_R" )
                 
                 mover_hueso         = Vector((0.0,0.0,0.0))                # define cuanto se desplazara
                 ik_mano.head = hueso_mano_r.head + mover_hueso             # mueve la cabeza del hueso
@@ -1895,18 +1903,14 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 #IK_control_espalda_nombre
                 IK_hombro = IK_esqueleto.data.edit_bones.get(IK_control_hombros)
                 
-                #if not IK_hombro == None:
-                #    ik_mano.parent = IK_hombro
-                #else:
-                #    ik_mano.parent = None
                 ik_mano.parent = None
-                #ik_mano.display_type = "BBONE"
+   
                 
                  # antes de pasar a modo pose obtenemos nombre del hueso duplicado
                 
                 
                 # creacion del polea 
-                codo_name = "IK.BRAZO_R.antebrazo.R"
+                codo_name = PREFIJO_HUESOS_IK + ZONA_BRAZO_R + esqueleto_nomenclatura.antebrazo + R
                 selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False) 
                 hueso_codo = IK_esqueleto.data.edit_bones.get(codo_name)
                 
@@ -1978,13 +1982,13 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_mano_l_name = "IK.MANO_L.mano.L"                              # nombre del hueso de la cabeza
+            hueso_mano_l_name = PREFIJO_HUESOS_IK + ZONA_MANO_L + esqueleto_nomenclatura.mano + L # nombre del hueso de la cabeza
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
             hueso_mano_l = IK_esqueleto.data.edit_bones.get(hueso_mano_l_name)        # busca el hueso de la mano
             
             if not hueso_mano_l == None:
                 
-                ik_mano = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+"mano_L")
+                ik_mano = IK_esqueleto.data.edit_bones.new(PREFIJO_HUESO_IK_CONTROL+esqueleto_nomenclatura.mano + "_L")
                 
                 mover_hueso         = Vector((0.0,0.0,0.0))                # define cuanto se desplazara
                 ik_mano.head = hueso_mano_l.head + mover_hueso             # mueve la cabeza del hueso
@@ -2008,7 +2012,7 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 
                 
                 # creacion del polea 
-                codo_name = "IK.BRAZO_L.antebrazo.L"
+                codo_name = PREFIJO_HUESOS_IK + ZONA_BRAZO_L + esqueleto_nomenclatura.antebrazo + L
                 selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False) 
                 hueso_codo = IK_esqueleto.data.edit_bones.get(codo_name)
                 
@@ -2081,13 +2085,15 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            prefijo         = "IK.PIE_R."
-            hueso_ik_name   = "pie_R"
-            hueso_pie_name  = prefijo + "pie.R"                              # nombre del hueso de la cabeza
+            hueso_ik_name   = esqueleto_nomenclatura.pie + "_R"
+            hueso_pie_name  = PREFIJO_HUESOS_IK + ZONA_PIE_R + esqueleto_nomenclatura.pie + R                             # nombre del hueso de la cabeza
             
-            codo_name       = "IK.PIERNA_R.antepierna.R"
+            codo_name       = PREFIJO_HUESOS_IK + ZONA_PIERNA_R + esqueleto_nomenclatura.antepierna + R
             pole_name       = "pole_R"
+            
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
+            
+            
             hueso_base = IK_esqueleto.data.edit_bones.get(hueso_pie_name)        # busca el hueso de la mano
             
             if not hueso_base == None:
@@ -2182,32 +2188,32 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_objetivo_name = "IK.PIE_R.dedos.R"                                        # nombre del hueso de la cabeza
-            hueso_padre_name    = "IK.CONTROL.pie_R"
-            hueso_ik_nombre     = "dedos_R"
-            mover_hueso         = Vector((0.0,-0.05,0.0))                                     # define cuanto se desplazara
+            hueso_objetivo_name = PREFIJO_HUESOS_IK + ZONA_PIE_R + esqueleto_nomenclatura.dedo_pie + R 
+            hueso_padre_name    = PREFIJO_HUESO_IK_CONTROL + esqueleto_nomenclatura.pie + "_R"
+            hueso_ik_nombre     = esqueleto_nomenclatura.dedo_pie + "_R"
+            mover_hueso         = Vector((0.0,-0.8,0))                                     # define cuanto se desplazara
             
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)                         # des seleciona todos los huesos en modo edition
             
             hueso_objetivo     = IK_esqueleto.data.edit_bones.get(hueso_objetivo_name)      # busca el hueso de la cabeza
             hueso_padre        = IK_esqueleto.data.edit_bones.get(hueso_padre_name)
              
-            IK_control_hombros = PREFIJO_HUESO_IK_CONTROL+hueso_ik_nombre    # nombre que tendra el hueso IK de la espalda 
+            IK_control_dedos = PREFIJO_HUESO_IK_CONTROL+hueso_ik_nombre    # nombre que tendra el hueso IK de la espalda 
             
             if (not hueso_objetivo == None) and (not hueso_padre == None): # si encuentra el hueso 
                 
                 # duplica la cabeza 
-                hueso_ik = IK_esqueleto.data.edit_bones.new(IK_control_hombros)
+                hueso_ik = IK_esqueleto.data.edit_bones.new(IK_control_dedos)
 
                 hueso_ik.head = hueso_objetivo.head + mover_hueso # mueve la cabeza del hueso
                 hueso_ik.tail = hueso_objetivo.tail + mover_hueso # mueve la cola del hueso
+                
                 
                 # configuracion del hueso 
                 hueso_ik.use_connect  = False
                 hueso_ik.use_deform   = False
                 hueso_ik.parent       = hueso_padre
                 #control_cabeza.display_type = "BBONE"
-                
                 
                 # antes de pasar a modo pose obtenemos nombre del hueso duplicado
                 nombre_hueso_ik = hueso_ik.name
@@ -2253,12 +2259,13 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            prefijo         = "IK.PIE_L."
-            hueso_ik_name   = "pie_L"
-            hueso_pie_name  = prefijo + "pie.L"                              # nombre del hueso de la cabeza
             
-            codo_name       = "IK.PIERNA_L.antepierna.L"
+            hueso_ik_name   = esqueleto_nomenclatura.pie + "_L"
+            hueso_pie_name  = PREFIJO_HUESOS_IK + ZONA_PIE_L + esqueleto_nomenclatura.pie + L                             # nombre del hueso de la cabeza
+            
+            codo_name       = PREFIJO_HUESOS_IK + ZONA_PIERNA_L + esqueleto_nomenclatura.antepierna + L
             pole_name       = "pole_L"
+            
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)             # des seleciona todos los huesos en modo edition
             hueso_base = IK_esqueleto.data.edit_bones.get(hueso_pie_name)        # busca el hueso de la mano
             
@@ -2348,26 +2355,26 @@ class OBJECT_OT_Generar_sistema_IK(bpy.types.Operator):
                 pass
             
              ##############################################################
-            # pie R   
+            # pie L   
             
             bpy.ops.object.mode_set(mode='EDIT')
             
-            hueso_objetivo_name = "IK.PIE_L.dedos.L"                                        # nombre del hueso de la cabeza
-            hueso_padre_name    = "IK.CONTROL.pie_L"
-            hueso_ik_nombre     = "dedos_L"
-            mover_hueso         = Vector((0.0,-0.05,0.0))                                     # define cuanto se desplazara
+            hueso_objetivo_name = PREFIJO_HUESOS_IK + ZONA_PIE_L + esqueleto_nomenclatura.dedo_pie + L 
+            hueso_padre_name    = PREFIJO_HUESO_IK_CONTROL + esqueleto_nomenclatura.pie + "_L"
+            hueso_ik_nombre     = esqueleto_nomenclatura.dedo_pie + "_L"
+            mover_hueso         = Vector((0.0,-0.08,0.0))                                     # define cuanto se desplazara
             
             selecionar_huesos(IK_esqueleto,PREFIJO_HUESOS_IK,False)                         # des seleciona todos los huesos en modo edition
             
             hueso_objetivo     = IK_esqueleto.data.edit_bones.get(hueso_objetivo_name)      # busca el hueso de la cabeza
             hueso_padre        = IK_esqueleto.data.edit_bones.get(hueso_padre_name)
              
-            IK_control_hombros = PREFIJO_HUESO_IK_CONTROL+hueso_ik_nombre    # nombre que tendra el hueso IK de la espalda 
+            IK_control_dedos = PREFIJO_HUESO_IK_CONTROL+hueso_ik_nombre    # nombre que tendra el hueso IK de la espalda 
             
             if (not hueso_objetivo == None) and (not hueso_padre == None): # si encuentra el hueso 
                 
                 # duplica la cabeza 
-                hueso_ik = IK_esqueleto.data.edit_bones.new(IK_control_hombros)
+                hueso_ik = IK_esqueleto.data.edit_bones.new(IK_control_dedos)
 
                 hueso_ik.head = hueso_objetivo.head + mover_hueso # mueve la cabeza del hueso
                 hueso_ik.tail = hueso_objetivo.tail + mover_hueso # mueve la cola del hueso
