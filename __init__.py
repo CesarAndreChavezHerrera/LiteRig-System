@@ -2558,6 +2558,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
         obj = context.object
         esqueleto = obj
         mocap_prop = obj.data.control_rig.mocap_prop
+        huesos = obj.data.control_rig.hueso
         
         tipo_mocap   = mocap_prop.tipo_mocap     #tipo de captura de movimiento
         target_mocap = mocap_prop.from_armature  #la armatura que tiene la captura de movimiento
@@ -2579,10 +2580,11 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
         # retargeting de ipi mocap
         if tipo_mocap == opcion_mocap_0[0]:
             #selectionar huesos del esqueleto de mocap:
-            for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+            for ipi_bone, bone_owner in huesos.mapeo_ipi.items():
                 
-                self.report({"INFO"},f"{bone_owner}")
+                
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
+                #self.report({"INFO"},f"{bone_owner} {ipi_bone}  {bone}")
                 if bone:
                     #self.report({"INFO"},f"{bone.name}")
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
@@ -2599,12 +2601,12 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
         # retargeting de mixamo mocap
         elif tipo_mocap == opcion_mocap_1[0]:
             #selectionar huesos del esqueleto de mocap:
-            for ipi_bone, bone_owner in MAPEO_FREEMOCAP_ESQUELETO_SISTEMA_MOCAP.items():
+            for ipi_bone, bone_owner in huesos.mapeo_freemocap.items():
                 
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
                 if bone:
-                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + HUESO_PELVIS_CENTRAL:
+                    if bone.name == PREFIJO_HUESOS_MOCAP + ZONA_ESPALDA + huesos.pelvis_central:
                         constraint_hueso        = bone.constraints.new("COPY_LOCATION")
                         constraint_hueso.name          = contraint_location_name
                         constraint_hueso.target        = target_mocap
@@ -2613,7 +2615,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
                         constraint_hueso.target_space  = "LOCAL_OWNER_ORIENT"
                         constraint_hueso.owner_space   = "LOCAL" 
                         
-                    #self.report({"INFO"},f"{bone.name}")
+                    #self.report({"INFO"},f"{bone.name}") 
                     constraint_hueso        = bone.constraints.new("COPY_ROTATION")
                     constraint_hueso.name          = contraint_rotation_name
                     constraint_hueso.target        = target_mocap
@@ -2628,7 +2630,7 @@ class OBJECT_OT_CONECTAR_MOCAP(bpy.types.Operator):
         # retargeting de mixamo mocap
         elif tipo_mocap == opcion_mocap_2[0]:
             #selectionar huesos del esqueleto de mocap:
-            for ipi_bone, bone_owner in MAPEO_MIXAMO_ESQUELETO_SISTEMA_MOCAP.items():
+            for ipi_bone, bone_owner in huesos.mapeo_mixamo.items():
                 
                 self.report({"INFO"},f"{bone_owner}")
                 bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
