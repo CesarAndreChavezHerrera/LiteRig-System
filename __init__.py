@@ -2660,7 +2660,7 @@ class OBJECT_OT_TRANSFER_MOCAP(bpy.types.Operator):
             pass 
         
         #selectionar
-        for ipi_bone, bone_owner in MAPEO_IPI_ESQUELETO_SISTEMA_MOCAP.items():
+        for ipi_bone, bone_owner in obj.data.control_rig.hueso.mapeo_ipi.items():
             bone = buscar_hueso_especifico_pose(esqueleto,bone_owner)
             if bone:
                 bone.select = True
